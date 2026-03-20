@@ -122,7 +122,7 @@
     .status-indicator {
       display: flex;
       align-items: center;
-      gap: 0px;
+      gap: 4px;
     }
 
     .timestamp {
@@ -447,7 +447,11 @@
 <body>
   <div class="status-bar">
     <div class="status-indicator">
+      <span style="font-size: 14px; margin-right: 4px;">💻</span>
       <div class="status-dot connected" id="status-dot" title="Web App"></div>
+    </div>
+    <div class="status-indicator">
+      <span style="font-size: 14px; margin-right: 4px;">🔌</span>
       <div class="status-dot connected" id="inverter-dot" title="Inverter"></div>
     </div>
     <div class="status-indicator">
