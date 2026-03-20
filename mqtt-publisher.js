@@ -89,12 +89,12 @@ export class MqttPublisher {
     const topic = `${this.baseTopic}/${skPath.replace(/\./g, '/')}`;
     let message;
     
-    if (typeof value === 'string') {
-      message = `"${value}"`;
+    if (typeof value === 'object') {
+      message = JSON.stringify(value);
     } else if (typeof value === 'number') {
       message = String(value);
     } else {
-      message = JSON.stringify(value);
+      message = String(value);
     }
 
     this.client.publish(topic, message, {
@@ -126,7 +126,7 @@ export class MqttPublisher {
 
     if (data.systemStatus) {
       const mode = this.mapInverterMode(data.systemStatus.stateText);
-      this.publish('electrical.inverters.0.inverterMode', mode);
+      this.publish('electrical.inverters.0.inverterMode', { value: mode });
       this.publish('electrical.inverters.0.state', data.systemStatus.state);
     }
 
