@@ -28,8 +28,16 @@ export class InverterModbusClient {
   async connect() {
     return new Promise((resolve) => {
       try {
+        // Clean up old socket if it exists
+        if (this.socket) {
+          this.socket.removeAllListeners();
+          this.socket.destroy();
+          this.socket = null;
+        }
+        
         this.socket = new net.Socket();
         this.socket.setTimeout(10000);
+        this.socket.setKeepAlive(true, 5000);
         
         this.socket.on('error', (err) => {
           console.error('✗ Socket error:', err.message);
@@ -69,8 +77,10 @@ export class InverterModbusClient {
 
   async disconnect() {
     if (this.socket) {
+      this.socket.removeAllListeners();
       this.socket.end();
       this.socket.destroy();
+      this.socket = null;
       this.connected = false;
       console.log('✓ Disconnected from inverter');
     }
@@ -136,14 +146,26 @@ export class InverterModbusClient {
         this.socket.removeListener('data', dataHandler);
         
         try {
+          // Validate we have enough data for the requested registers
+          const expectedBytes = count * 2;
+          if (byteCount < expectedBytes) {
+            reject(new Error(`Incomplete response: expected ${expectedBytes} bytes, got ${byteCount}`));
+            return;
+          }
+          
           const values = [];
           for (let i = 0; i < count; i++) {
-            const value = responseBuffer.readUInt16BE(9 + (i * 2));
+            const offset = 9 + (i * 2);
+            if (offset + 1 >= responseBuffer.length) {
+              reject(new Error(`Buffer overflow at register ${i}: offset ${offset} exceeds buffer length ${responseBuffer.length}`));
+              return;
+            }
+            const value = responseBuffer.readUInt16BE(offset);
             values.push(value);
           }
           resolve(values);
         } catch (error) {
-          reject(error);
+          reject(new Error(`Parse error: ${error.message}`));
         }
       };
 
