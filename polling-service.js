@@ -9,6 +9,7 @@ export class PollingService {
     this.mqttPublisher = mqttPublisher;
     this.parser = new InverterDataParser(modbusClient);
     this.isRunning = false;
+    this.isPolling = false;
     this.pollTimer = null;
   }
 
@@ -24,7 +25,11 @@ export class PollingService {
     await this.poll();
     
     this.pollTimer = setInterval(async () => {
-      await this.poll();
+      if (!this.isPolling) {
+        await this.poll();
+      } else {
+        console.warn('⚠ Skipping poll - previous cycle still in progress');
+      }
     }, this.pollInterval);
   }
 
@@ -56,6 +61,13 @@ export class PollingService {
   }
 
   async poll() {
+    if (this.isPolling) {
+      console.warn('⚠ Poll already in progress, skipping');
+      return;
+    }
+    
+    this.isPolling = true;
+    
     try {
       console.log('Poll cycle starting...');
       const systemStatusGroups = REGISTER_GROUPS.SYSTEM_STATUS;
@@ -63,19 +75,19 @@ export class PollingService {
       const acGroups = REGISTER_GROUPS.AC_GRID_INV_LOAD;
       const energyGroups = REGISTER_GROUPS.ENERGY;
 
-      const systemStatusData = await this.modbusClient.readRegisterGroups(systemStatusGroups);
+      const systemStatusData = await this.modbusClient.readRegisterGroups(systemStatusGroups, 200);
       this.checkForErrors(systemStatusData, 'System status', true);
       console.log('System status read');
       
-      const batteryData = await this.modbusClient.readRegisterGroups(batteryGroups);
+      const batteryData = await this.modbusClient.readRegisterGroups(batteryGroups, 200);
       this.checkForErrors(batteryData, 'Battery data', false);
       console.log('Battery data read');
       
-      const acData = await this.modbusClient.readRegisterGroups(acGroups);
+      const acData = await this.modbusClient.readRegisterGroups(acGroups, 200);
       this.checkForErrors(acData, 'AC data', false);
       console.log('AC data read');
       
-      const energyData = await this.modbusClient.readRegisterGroups(energyGroups);
+      const energyData = await this.modbusClient.readRegisterGroups(energyGroups, 200);
       this.checkForErrors(energyData, 'Energy data', false);
       console.log('Energy data read');
 
@@ -104,8 +116,10 @@ export class PollingService {
       }
       
       console.log('Poll cycle completed');
+      this.isPolling = false;
 
     } catch (error) {
+      this.isPolling = false;
       console.error('Error during polling:', error.message);
       
       if (this.webServer) {
