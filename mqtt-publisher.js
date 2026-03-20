@@ -121,10 +121,8 @@ export class MqttPublisher {
 
   publishInverterData(data) {
     if (!this.connected) {
-      console.log('MQTT not connected, skipping publish');
       return;
     }
-    console.log('Publishing inverter data to MQTT...');
 
     if (data.systemStatus) {
       const mode = this.mapInverterMode(data.systemStatus.stateText);
@@ -239,7 +237,5 @@ export class MqttPublisher {
         this.publish('electrical.solar.0.energyTotalKwh', data.energy.total.pvGeneration);
       }
     }
-    
-    console.log('✓ Published inverter data to MQTT');
   }
 }

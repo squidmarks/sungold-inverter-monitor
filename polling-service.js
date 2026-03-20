@@ -69,7 +69,6 @@ export class PollingService {
     this.isPolling = true;
     
     try {
-      console.log('Poll cycle starting...');
       const systemStatusGroups = REGISTER_GROUPS.SYSTEM_STATUS;
       const batteryGroups = REGISTER_GROUPS.BATTERY;
       const acGroups = REGISTER_GROUPS.AC_GRID_INV_LOAD;
@@ -77,19 +76,15 @@ export class PollingService {
 
       const systemStatusData = await this.modbusClient.readRegisterGroups(systemStatusGroups, 200);
       this.checkForErrors(systemStatusData, 'System status', true);
-      console.log('System status read');
       
       const batteryData = await this.modbusClient.readRegisterGroups(batteryGroups, 200);
       this.checkForErrors(batteryData, 'Battery data', false);
-      console.log('Battery data read');
       
       const acData = await this.modbusClient.readRegisterGroups(acGroups, 200);
       this.checkForErrors(acData, 'AC data', false);
-      console.log('AC data read');
       
       const energyData = await this.modbusClient.readRegisterGroups(energyGroups, 200);
       this.checkForErrors(energyData, 'Energy data', false);
-      console.log('Energy data read');
 
       const systemStatus = this.parser.parseSystemStatus(systemStatusData);
       const battery = this.parser.parseBatteryData(batteryData);
@@ -107,7 +102,6 @@ export class PollingService {
       };
 
       if (this.webServer) {
-        console.log('Broadcasting to web clients...');
         this.webServer.broadcastData(payload);
       }
 
@@ -115,7 +109,6 @@ export class PollingService {
         this.mqttPublisher.publishInverterData(payload);
       }
       
-      console.log('Poll cycle completed');
       this.isPolling = false;
 
     } catch (error) {

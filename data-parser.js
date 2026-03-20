@@ -121,24 +121,12 @@ export class InverterDataParser {
         },
         powerFactor: basicData2 ? basicData2[7] * 0.01 : null,
       },
-      temperatures: (() => {
-        if (tempsData) {
-          const temps = {
-            dcDc: this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_A.address, REGISTERS.INVERTER_DATA.TEMPER_A),
-            dcAc: this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_B.address, REGISTERS.INVERTER_DATA.TEMPER_B),
-            transformer: this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_C.address, REGISTERS.INVERTER_DATA.TEMPER_C),
-            ambient: this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_D.address, REGISTERS.INVERTER_DATA.TEMPER_D)
-          };
-          console.log(`🌡️ Temps (raw@0x${baseAddrTemps.toString(16)}): [${tempsData.slice(0, 4).join(', ')}] => DC-DC:${temps.dcDc}°C, DC-AC:${temps.dcAc}°C, Xfmr:${temps.transformer}°C, Ambient:${temps.ambient}°C`);
-          return temps;
-        }
-        return {
-          dcDc: null,
-          dcAc: null,
-          transformer: null,
-          ambient: null
-        };
-      })(),
+      temperatures: {
+        dcDc: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_A.address, REGISTERS.INVERTER_DATA.TEMPER_A) : null,
+        dcAc: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_B.address, REGISTERS.INVERTER_DATA.TEMPER_B) : null,
+        transformer: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_C.address, REGISTERS.INVERTER_DATA.TEMPER_C) : null,
+        ambient: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_D.address, REGISTERS.INVERTER_DATA.TEMPER_D) : null,
+      },
       lineChargeCurrent: basicData2 ? basicData2[3] * 0.1 : null,
       busVoltage: basicData1 ? basicData1[0] * 0.1 : null,
     };
