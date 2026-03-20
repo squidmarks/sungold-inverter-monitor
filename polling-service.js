@@ -70,12 +70,15 @@ export class PollingService {
       };
 
       if (this.webServer) {
+        console.log('Broadcasting to web clients...');
         this.webServer.broadcastData(payload);
       }
 
       if (this.mqttPublisher) {
         this.mqttPublisher.publishInverterData(payload);
       }
+      
+      console.log('Poll cycle completed');
 
     } catch (error) {
       console.error('Error during polling:', error.message);
