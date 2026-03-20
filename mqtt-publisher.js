@@ -87,7 +87,7 @@ export class MqttPublisher {
     }
 
     const topic = `${this.baseTopic}/${skPath.replace(/\./g, '/')}`;
-    const message = JSON.stringify(value);
+    const message = String(value);
 
     this.client.publish(topic, message, {
       qos: options.qos || 0,
