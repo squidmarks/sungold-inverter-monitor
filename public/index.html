@@ -970,18 +970,18 @@
         
         if (data.ac.grid?.l1) {
           updateElement('grid-l1-voltage', data.ac.grid.l1.voltage, 1, 'V');
-          updateElement('summary-grid-l1-v', data.ac.grid.l1.voltage, 1, '');
+          updateElement('summary-grid-l1-v', data.ac.grid.l1.voltage, 1, 'V');
           updateElement('grid-l1-current', data.ac.grid.l1.current, 1, 'A');
           updateElement('grid-l1-power', data.ac.grid.l1.activePower, 0, 'W');
-          updateElement('summary-grid-l1-p', data.ac.grid.l1.activePower, 0, '');
+          updateElement('summary-grid-l1-p', data.ac.grid.l1.activePower, 0, 'W');
         }
 
         if (data.ac.grid?.l2) {
           updateElement('grid-l2-voltage', data.ac.grid.l2.voltage, 1, 'V');
-          updateElement('summary-grid-l2-v', data.ac.grid.l2.voltage, 1, '');
+          updateElement('summary-grid-l2-v', data.ac.grid.l2.voltage, 1, 'V');
           updateElement('grid-l2-current', data.ac.grid.l2.current, 1, 'A');
           updateElement('grid-l2-power', data.ac.grid.l2.activePower, 0, 'W');
-          updateElement('summary-grid-l2-p', data.ac.grid.l2.activePower, 0, '');
+          updateElement('summary-grid-l2-p', data.ac.grid.l2.activePower, 0, 'W');
         }
 
         updateElement('inv-freq', data.ac.inverter?.frequency, 2, 'Hz');
