@@ -39,15 +39,20 @@ export class PollingService {
 
   async poll() {
     try {
+      console.log('Poll cycle starting...');
       const systemStatusGroups = REGISTER_GROUPS.SYSTEM_STATUS;
       const batteryGroups = REGISTER_GROUPS.BATTERY;
       const acGroups = REGISTER_GROUPS.AC_GRID_INV_LOAD;
       const energyGroups = REGISTER_GROUPS.ENERGY;
 
       const systemStatusData = await this.modbusClient.readRegisterGroups(systemStatusGroups);
+      console.log('System status read');
       const batteryData = await this.modbusClient.readRegisterGroups(batteryGroups);
+      console.log('Battery data read');
       const acData = await this.modbusClient.readRegisterGroups(acGroups);
+      console.log('AC data read');
       const energyData = await this.modbusClient.readRegisterGroups(energyGroups);
+      console.log('Energy data read');
 
       const systemStatus = this.parser.parseSystemStatus(systemStatusData);
       const battery = this.parser.parseBatteryData(batteryData);
