@@ -12,7 +12,8 @@ export function loadConfig() {
     SLAVE_ID: 1,
     MQTT_HOST: 'becoming-hub',
     MQTT_PORT: 1883,
-    POLL_INTERVAL_MS: 5000
+    POLL_INTERVAL_MS: 5000,
+    WEB_PORT: 3000
   };
 
   if (fs.existsSync(envPath)) {

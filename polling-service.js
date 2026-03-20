@@ -3,9 +3,10 @@ import { InverterDataParser } from './data-parser.js';
 import { TerminalFormatter } from './terminal-formatter.js';
 
 export class PollingService {
-  constructor(modbusClient, pollInterval) {
+  constructor(modbusClient, pollInterval, webServer = null) {
     this.modbusClient = modbusClient;
     this.pollInterval = pollInterval;
+    this.webServer = webServer;
     this.parser = new InverterDataParser(modbusClient);
     this.isRunning = false;
     this.pollTimer = null;
@@ -60,6 +61,16 @@ export class PollingService {
         energy,
         this.pollInterval
       );
+
+      if (this.webServer) {
+        this.webServer.broadcastData({
+          timestamp: new Date().toISOString(),
+          systemStatus,
+          battery,
+          ac,
+          energy
+        });
+      }
 
     } catch (error) {
       console.error('Error during polling:', error.message);

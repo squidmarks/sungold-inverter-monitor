@@ -8,11 +8,18 @@
     "start": "node index.js",
     "dev": "node --watch index.js"
   },
-  "keywords": ["modbus", "inverter", "mqtt", "signalk", "marine"],
+  "keywords": [
+    "modbus",
+    "inverter",
+    "mqtt",
+    "signalk",
+    "marine"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "modbus-serial": "^8.0.17",
+    "express": "^4.21.2",
+    "modbus-rtu": "^0.2.1",
     "mqtt": "^5.10.1"
   }
 }

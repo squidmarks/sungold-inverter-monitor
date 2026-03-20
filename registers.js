@@ -148,18 +148,23 @@ export const REGISTER_GROUPS = {
   ],
   
   BATTERY: [
-    { name: 'BATTERY_DATA', address: 0x0100, count: 28 },
+    { name: 'BATTERY_BASIC_1', address: 0x0100, count: 8 },
+    { name: 'BATTERY_BASIC_2', address: 0x0108, count: 7 },
+    { name: 'BATTERY_BMS', address: 0x0112, count: 10 },
   ],
   
   AC_GRID_INV_LOAD: [
-    { name: 'AC_DATA_1', address: 0x0213, count: 32 },
-    { name: 'AC_DATA_2', address: 0x0233, count: 19 },
+    { name: 'AC_DATA_BASIC_1', address: 0x0213, count: 8 },
+    { name: 'AC_DATA_BASIC_2', address: 0x021B, count: 5 },
+    { name: 'AC_DATA_TEMPS', address: 0x0220, count: 5 },
+    { name: 'AC_DATA_PHASE_B', address: 0x022A, count: 8 },
+    { name: 'AC_DATA_LOAD', address: 0x0232, count: 10 },
   ],
   
   ENERGY: [
     { name: 'ENERGY_TODAY', address: 0xF02C, count: 6 },
     { name: 'ENERGY_TOTALS_1', address: 0xF032, count: 10 },
-    { name: 'ENERGY_TOTALS_2', address: 0xF03C, count: 5 },
+    { name: 'ENERGY_TOTALS_2', address: 0xF03C, count: 4 },
     { name: 'ENERGY_TOTALS_3', address: 0xF046, count: 6 },
     { name: 'ENERGY_KWH_TODAY', address: 0xF04D, count: 2 },
     { name: 'ENERGY_KWH_TOTAL', address: 0xF04F, count: 4 },

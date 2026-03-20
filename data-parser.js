@@ -17,107 +17,118 @@ export class InverterDataParser {
   }
 
   parseBatteryData(rawData) {
-    const data = rawData.BATTERY_DATA?.data;
-    if (!data) return null;
+    const basicData1 = rawData.BATTERY_BASIC_1?.data;
+    const basicData2 = rawData.BATTERY_BASIC_2?.data;
+    const bmsData = rawData.BATTERY_BMS?.data;
+    
+    if (!basicData1 || !basicData2) return null;
 
-    const baseAddr = 0x0100;
+    const baseAddrBasic1 = 0x0100;
+    const baseAddrBasic2 = 0x0108;
+    const baseAddrBms = 0x0112;
 
     return {
-      soc: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_SOC.address, REGISTERS.DC_DATA.BAT_SOC),
-      voltage: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_VOLT.address, REGISTERS.DC_DATA.BAT_VOLT),
-      current: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.CHARGE_CURR.address, REGISTERS.DC_DATA.CHARGE_CURR),
-      temperature: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.DEVICE_BAT_TEMPER.address, REGISTERS.DC_DATA.DEVICE_BAT_TEMPER),
-      soh: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_SOH.address, REGISTERS.DC_DATA.BAT_SOH),
-      ratedCapacity: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_RATED_CAPACITY.address, REGISTERS.DC_DATA.BAT_RATED_CAPACITY),
-      remainCapacity: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_REMAIN_CAPACITY.address, REGISTERS.DC_DATA.BAT_REMAIN_CAPACITY),
-      chargeState: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.CHARGE_STATE.address, REGISTERS.DC_DATA.CHARGE_STATE),
-      chargeStateText: CHARGE_STATES[data[11]] || `Unknown (${data[11]})`,
-      cycleCount: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BATTERY_CYCLE_COUNT.address, REGISTERS.DC_DATA.BATTERY_CYCLE_COUNT),
-      chargePower: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.CHARGE_POWER.address, REGISTERS.DC_DATA.CHARGE_POWER),
-      bms: {
-        voltage: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_BMS_VOLT.address, REGISTERS.DC_DATA.BAT_BMS_VOLT),
-        current: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_BMS_CURR.address, REGISTERS.DC_DATA.BAT_BMS_CURR),
-        temperature: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_BMS_TEMP.address, REGISTERS.DC_DATA.BAT_BMS_TEMP),
-        chgLimitCurr: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_BMS_CHG_LIMIT_CURR.address, REGISTERS.DC_DATA.BAT_BMS_CHG_LIMIT_CURR),
-        dchgLimitCurr: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.BAT_BMS_DCHG_LIMIT_CURR.address, REGISTERS.DC_DATA.BAT_BMS_DCHG_LIMIT_CURR),
-        alarmH: data[24],
-        alarmL: data[25],
-        protectH: data[26],
-        protectL: data[27]
-      },
+      soc: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.BAT_SOC.address, REGISTERS.DC_DATA.BAT_SOC),
+      voltage: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.BAT_VOLT.address, REGISTERS.DC_DATA.BAT_VOLT),
+      current: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.CHARGE_CURR.address, REGISTERS.DC_DATA.CHARGE_CURR),
+      temperature: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.DEVICE_BAT_TEMPER.address, REGISTERS.DC_DATA.DEVICE_BAT_TEMPER),
+      soh: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.BAT_SOH.address, REGISTERS.DC_DATA.BAT_SOH),
+      ratedCapacity: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.BAT_RATED_CAPACITY.address, REGISTERS.DC_DATA.BAT_RATED_CAPACITY),
+      remainCapacity: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.BAT_REMAIN_CAPACITY.address, REGISTERS.DC_DATA.BAT_REMAIN_CAPACITY),
       pv1: {
-        voltage: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.PV1_VOLT.address, REGISTERS.DC_DATA.PV1_VOLT),
-        current: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.PV1_CURR.address, REGISTERS.DC_DATA.PV1_CURR),
-        power: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.PV1_CHARGE_POWER.address, REGISTERS.DC_DATA.PV1_CHARGE_POWER),
+        voltage: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.DC_DATA.PV1_VOLT.address, REGISTERS.DC_DATA.PV1_VOLT),
+        current: this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.DC_DATA.PV1_CURR.address, REGISTERS.DC_DATA.PV1_CURR),
+        power: this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.DC_DATA.PV1_CHARGE_POWER.address, REGISTERS.DC_DATA.PV1_CHARGE_POWER),
       },
+      pvTotalPower: this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.DC_DATA.PV_TOTAL_POWER.address, REGISTERS.DC_DATA.PV_TOTAL_POWER),
+      chargeState: this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.DC_DATA.CHARGE_STATE.address, REGISTERS.DC_DATA.CHARGE_STATE),
+      chargeStateText: CHARGE_STATES[basicData2[3]] || `Unknown (${basicData2[3]})`,
+      cycleCount: this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.DC_DATA.BATTERY_CYCLE_COUNT.address, REGISTERS.DC_DATA.BATTERY_CYCLE_COUNT),
+      chargePower: this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.DC_DATA.CHARGE_POWER.address, REGISTERS.DC_DATA.CHARGE_POWER),
       pv2: {
-        voltage: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.PV2_VOLT.address, REGISTERS.DC_DATA.PV2_VOLT),
-        current: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.PV2_CURR.address, REGISTERS.DC_DATA.PV2_CURR),
-        power: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.PV2_CHARGE_POWER.address, REGISTERS.DC_DATA.PV2_CHARGE_POWER),
+        voltage: this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.DC_DATA.PV2_VOLT.address, REGISTERS.DC_DATA.PV2_VOLT),
+        current: basicData2 ? basicData2[2] * 0.1 : null,
+        power: basicData2 ? basicData2[3] : null,
       },
-      pvTotalPower: this.client.extractRegisterValue(data, baseAddr, REGISTERS.DC_DATA.PV_TOTAL_POWER.address, REGISTERS.DC_DATA.PV_TOTAL_POWER),
+      bms: bmsData ? {
+        voltage: this.client.extractRegisterValue(bmsData, baseAddrBms, REGISTERS.DC_DATA.BAT_BMS_VOLT.address, REGISTERS.DC_DATA.BAT_BMS_VOLT),
+        current: this.client.extractRegisterValue(bmsData, baseAddrBms, REGISTERS.DC_DATA.BAT_BMS_CURR.address, REGISTERS.DC_DATA.BAT_BMS_CURR),
+        temperature: this.client.extractRegisterValue(bmsData, baseAddrBms, REGISTERS.DC_DATA.BAT_BMS_TEMP.address, REGISTERS.DC_DATA.BAT_BMS_TEMP),
+        chgLimitCurr: this.client.extractRegisterValue(bmsData, baseAddrBms, REGISTERS.DC_DATA.BAT_BMS_CHG_LIMIT_CURR.address, REGISTERS.DC_DATA.BAT_BMS_CHG_LIMIT_CURR),
+        dchgLimitCurr: this.client.extractRegisterValue(bmsData, baseAddrBms, REGISTERS.DC_DATA.BAT_BMS_DCHG_LIMIT_CURR.address, REGISTERS.DC_DATA.BAT_BMS_DCHG_LIMIT_CURR),
+        alarmH: bmsData[6],
+        alarmL: bmsData[7],
+        protectH: bmsData[8],
+        protectL: bmsData[9]
+      } : {},
     };
   }
 
   parseACData(rawData) {
-    const data1 = rawData.AC_DATA_1?.data;
-    const data2 = rawData.AC_DATA_2?.data;
+    const basicData1 = rawData.AC_DATA_BASIC_1?.data;
+    const basicData2 = rawData.AC_DATA_BASIC_2?.data;
+    const tempsData = rawData.AC_DATA_TEMPS?.data;
+    const phaseBData = rawData.AC_DATA_PHASE_B?.data;
+    const loadData = rawData.AC_DATA_LOAD?.data;
     
-    if (!data1) return null;
+    if (!basicData1) return null;
 
-    const baseAddr1 = 0x0213;
-    const baseAddr2 = 0x0233;
+    const baseAddrBasic1 = 0x0213;
+    const baseAddrBasic2 = 0x021B;
+    const baseAddrTemps = 0x0220;
+    const baseAddrPhaseB = 0x022A;
+    const baseAddrLoad = 0x0232;
 
     return {
       grid: {
         l1: {
-          voltage: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_VOLT_A.address, REGISTERS.INVERTER_DATA.GRID_VOLT_A),
-          current: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_CURR_A.address, REGISTERS.INVERTER_DATA.GRID_CURR_A),
-          activePower: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_A.address, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_A),
-          apparentPower: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_A.address, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_A),
+          voltage: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.INVERTER_DATA.GRID_VOLT_A.address, REGISTERS.INVERTER_DATA.GRID_VOLT_A),
+          current: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.INVERTER_DATA.GRID_CURR_A.address, REGISTERS.INVERTER_DATA.GRID_CURR_A),
+          activePower: loadData ? this.client.extractRegisterValue(loadData, baseAddrLoad, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_A.address, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_A) : null,
+          apparentPower: loadData ? this.client.extractRegisterValue(loadData, baseAddrLoad, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_A.address, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_A) : null,
         },
         l2: {
-          voltage: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_VOLT_B.address, REGISTERS.INVERTER_DATA.GRID_VOLT_B),
-          current: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_CURR_B.address, REGISTERS.INVERTER_DATA.GRID_CURR_B),
-          activePower: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_B.address, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_B),
-          apparentPower: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_B.address, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_B),
+          voltage: phaseBData ? this.client.extractRegisterValue(phaseBData, baseAddrPhaseB, REGISTERS.INVERTER_DATA.GRID_VOLT_B.address, REGISTERS.INVERTER_DATA.GRID_VOLT_B) : null,
+          current: phaseBData ? phaseBData[6] * 0.1 : null,
+          activePower: loadData ? this.client.extractRegisterValue(loadData, baseAddrLoad, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_B.address, REGISTERS.INVERTER_DATA.GRID_ACTIVE_POWER_B) : null,
+          apparentPower: loadData ? this.client.extractRegisterValue(loadData, baseAddrLoad, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_B.address, REGISTERS.INVERTER_DATA.GRID_APPARENT_POWER_B) : null,
         },
-        frequency: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.GRID_FREQ.address, REGISTERS.INVERTER_DATA.GRID_FREQ),
+        frequency: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.INVERTER_DATA.GRID_FREQ.address, REGISTERS.INVERTER_DATA.GRID_FREQ),
       },
       inverter: {
         l1: {
-          voltage: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.INV_VOLT_A.address, REGISTERS.INVERTER_DATA.INV_VOLT_A),
-          current: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.INV_CURR_A.address, REGISTERS.INVERTER_DATA.INV_CURR_A),
+          voltage: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.INVERTER_DATA.INV_VOLT_A.address, REGISTERS.INVERTER_DATA.INV_VOLT_A),
+          current: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.INVERTER_DATA.INV_CURR_A.address, REGISTERS.INVERTER_DATA.INV_CURR_A),
         },
         l2: {
-          voltage: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.INV_VOLT_B.address, REGISTERS.INVERTER_DATA.INV_VOLT_B),
-          current: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.INV_CURR_B.address, REGISTERS.INVERTER_DATA.INV_CURR_B),
+          voltage: phaseBData ? this.client.extractRegisterValue(phaseBData, baseAddrPhaseB, REGISTERS.INVERTER_DATA.INV_VOLT_B.address, REGISTERS.INVERTER_DATA.INV_VOLT_B) : null,
+          current: phaseBData ? this.client.extractRegisterValue(phaseBData, baseAddrPhaseB, REGISTERS.INVERTER_DATA.INV_CURR_B.address, REGISTERS.INVERTER_DATA.INV_CURR_B) : null,
         },
-        frequency: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.INV_FREQ.address, REGISTERS.INVERTER_DATA.INV_FREQ),
+        frequency: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.INVERTER_DATA.INV_FREQ.address, REGISTERS.INVERTER_DATA.INV_FREQ),
       },
       load: {
         l1: {
-          current: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LOAD_CURR_A.address, REGISTERS.INVERTER_DATA.LOAD_CURR_A),
-          activePower: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_A.address, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_A),
-          apparentPower: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LOAD_APPARENT_POWER_A.address, REGISTERS.INVERTER_DATA.LOAD_APPARENT_POWER_A),
-          ratio: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LOAD_RATIO_A.address, REGISTERS.INVERTER_DATA.LOAD_RATIO_A),
+          current: this.client.extractRegisterValue(basicData1, baseAddrBasic1, REGISTERS.INVERTER_DATA.LOAD_CURR_A.address, REGISTERS.INVERTER_DATA.LOAD_CURR_A),
+          activePower: basicData2 ? this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_A.address, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_A) : null,
+          apparentPower: basicData2 ? this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.INVERTER_DATA.LOAD_APPARENT_POWER_A.address, REGISTERS.INVERTER_DATA.LOAD_APPARENT_POWER_A) : null,
+          ratio: basicData2 ? this.client.extractRegisterValue(basicData2, baseAddrBasic2, REGISTERS.INVERTER_DATA.LOAD_RATIO_A.address, REGISTERS.INVERTER_DATA.LOAD_RATIO_A) : null,
         },
         l2: {
-          current: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LOAD_CURR_B.address, REGISTERS.INVERTER_DATA.LOAD_CURR_B),
-          activePower: data2 ? this.client.extractRegisterValue(data2, baseAddr2, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_B.address, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_B) : null,
-          apparentPower: data2 ? this.client.extractRegisterValue(data2, baseAddr2, REGISTERS.INVERTER_DATA.LOAD_REACTIVE_POWER_B.address, REGISTERS.INVERTER_DATA.LOAD_REACTIVE_POWER_B) : null,
-          ratio: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LOAD_RATIO_B.address, REGISTERS.INVERTER_DATA.LOAD_RATIO_B),
+          current: phaseBData ? phaseBData[6] * 0.1 : null,
+          activePower: loadData ? this.client.extractRegisterValue(loadData, baseAddrLoad, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_B.address, REGISTERS.INVERTER_DATA.LOAD_ACTIVE_POWER_B) : null,
+          apparentPower: loadData ? this.client.extractRegisterValue(loadData, baseAddrLoad, REGISTERS.INVERTER_DATA.LOAD_REACTIVE_POWER_B.address, REGISTERS.INVERTER_DATA.LOAD_REACTIVE_POWER_B) : null,
+          ratio: phaseBData ? phaseBData[6] : null,
         },
-        powerFactor: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LOAD_PF.address, REGISTERS.INVERTER_DATA.LOAD_PF),
+        powerFactor: basicData2 ? basicData2[7] * 0.01 : null,
       },
       temperatures: {
-        dcDc: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.TEMPER_A.address, REGISTERS.INVERTER_DATA.TEMPER_A),
-        dcAc: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.TEMPER_B.address, REGISTERS.INVERTER_DATA.TEMPER_B),
-        transformer: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.TEMPER_C.address, REGISTERS.INVERTER_DATA.TEMPER_C),
-        ambient: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.TEMPER_D.address, REGISTERS.INVERTER_DATA.TEMPER_D),
+        dcDc: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_A.address, REGISTERS.INVERTER_DATA.TEMPER_A) : null,
+        dcAc: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_B.address, REGISTERS.INVERTER_DATA.TEMPER_B) : null,
+        transformer: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_C.address, REGISTERS.INVERTER_DATA.TEMPER_C) : null,
+        ambient: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_D.address, REGISTERS.INVERTER_DATA.TEMPER_D) : null,
       },
-      lineChargeCurrent: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.LINE_CHG_CURR.address, REGISTERS.INVERTER_DATA.LINE_CHG_CURR),
-      busVoltage: this.client.extractRegisterValue(data1, baseAddr1, REGISTERS.INVERTER_DATA.BUS_VOLT_SUM.address, REGISTERS.INVERTER_DATA.BUS_VOLT_SUM),
+      lineChargeCurrent: basicData2 ? basicData2[3] * 0.1 : null,
+      busVoltage: basicData1 ? basicData1[0] * 0.1 : null,
     };
   }
 

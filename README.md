@@ -48,6 +48,19 @@ Or with Node.js watch mode for development:
 npm run dev
 ```
 
+This will:
+1. Start the Modbus TCP client and connect to the inverter
+2. Launch a web server on port 3000 (configurable in `.env`)
+3. Begin polling inverter data every 5 seconds
+4. Display real-time data in the terminal
+5. Serve a live dashboard at `http://localhost:3000`
+
+**Access the Web Dashboard:**
+- Local: `http://localhost:3000`
+- From other devices: `http://<pi-ip-address>:3000`
+
+The dashboard updates automatically in real-time using Server-Sent Events (SSE).
+
 Press `Ctrl+C` to stop.
 
 ## Architecture
@@ -55,10 +68,12 @@ Press `Ctrl+C` to stop.
 - **index.js** - Main entry point, handles initialization and graceful shutdown
 - **config.js** - Configuration loader from .env file
 - **registers.js** - Modbus register definitions from protocol specification
-- **modbus-client.js** - Modbus TCP client wrapper with connection management
+- **modbus-client.js** - Custom Modbus TCP client implementation with buffered responses
 - **data-parser.js** - Parses raw register data into structured format
 - **polling-service.js** - Manages periodic polling and error handling
 - **terminal-formatter.js** - Formats data for terminal display
+- **web-server.js** - Express server with SSE for real-time web dashboard
+- **public/index.html** - Marine-themed web dashboard with live updates
 
 ## Protocol Details
 
