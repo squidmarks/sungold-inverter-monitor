@@ -1,14 +1,14 @@
 export const MACHINE_STATES = {
-  0: 'Power-on Delay',
+  0: 'Power-on',
   1: 'Standby',
-  2: 'Initialization',
-  3: 'Soft Start',
-  4: 'AC Power Operation (Bypass)',
+  2: 'AC Power (Bypass)',
+  3: 'Inverter Operation',
+  4: 'AC Power (Bypass)',
   5: 'Inverter Operation',
   6: 'Inverter to AC Power',
-  7: 'AC Power to Inverter',
-  8: 'Battery Activation',
-  9: 'Manual Shutdown',
+  7: 'Switching',
+  8: 'Activating',
+  9: 'Shutdown',
   10: 'Fault'
 };
 
