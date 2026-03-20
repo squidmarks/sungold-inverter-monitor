@@ -37,6 +37,14 @@ export class PollingService {
     console.log('Polling service stopped');
   }
 
+  checkForErrors(data, context) {
+    for (const key in data) {
+      if (data[key].error) {
+        throw new Error(`${context} error: ${data[key].error}`);
+      }
+    }
+  }
+
   async poll() {
     try {
       console.log('Poll cycle starting...');
@@ -46,12 +54,19 @@ export class PollingService {
       const energyGroups = REGISTER_GROUPS.ENERGY;
 
       const systemStatusData = await this.modbusClient.readRegisterGroups(systemStatusGroups);
+      this.checkForErrors(systemStatusData, 'System status');
       console.log('System status read');
+      
       const batteryData = await this.modbusClient.readRegisterGroups(batteryGroups);
+      this.checkForErrors(batteryData, 'Battery data');
       console.log('Battery data read');
+      
       const acData = await this.modbusClient.readRegisterGroups(acGroups);
+      this.checkForErrors(acData, 'AC data');
       console.log('AC data read');
+      
       const energyData = await this.modbusClient.readRegisterGroups(energyGroups);
+      this.checkForErrors(energyData, 'Energy data');
       console.log('Energy data read');
 
       const systemStatus = this.parser.parseSystemStatus(systemStatusData);

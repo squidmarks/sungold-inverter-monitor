@@ -101,6 +101,9 @@ export class InverterModbusClient {
       const request = this.buildModbusTCPRequest(this.slaveId, 0x03, address, count);
       
       const timeout = setTimeout(() => {
+        console.error(`Modbus read timeout at register 0x${address.toString(16)}`);
+        this.socket.removeListener('data', dataHandler);
+        this.connected = false;
         reject(new Error(`Timeout reading registers at 0x${address.toString(16)}`));
       }, 5000);
 
