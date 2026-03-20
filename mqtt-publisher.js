@@ -107,14 +107,27 @@ export class MqttPublisher {
     });
   }
 
+  mapInverterMode(stateText) {
+    if (!stateText) return 'unknown';
+    
+    const lower = stateText.toLowerCase();
+    if (lower.includes('inverter operation')) return 'inverting';
+    if (lower.includes('standby')) return 'standby';
+    if (lower.includes('fault')) return 'faulted';
+    if (lower.includes('bypass') || lower.includes('ac power')) return 'idle';
+    if (lower.includes('shutdown')) return 'disabled';
+    return 'other';
+  }
+
   publishInverterData(data) {
     if (!this.connected) {
       return;
     }
 
     if (data.systemStatus) {
+      const mode = this.mapInverterMode(data.systemStatus.stateText);
+      this.publish('electrical.inverters.0.inverterMode', mode);
       this.publish('electrical.inverters.0.state', data.systemStatus.state);
-      this.publish('electrical.inverters.0.stateText', data.systemStatus.stateText);
     }
 
     if (data.battery) {
