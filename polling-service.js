@@ -117,12 +117,22 @@ export class PollingService {
         });
       }
       
-      if (error.message.includes('Timed out') || error.message.includes('connection')) {
-        console.log('Attempting to reconnect...');
+      if (error.message.includes('Timed out') || 
+          error.message.includes('connection') || 
+          error.message.includes('Not connected') ||
+          error.message.includes('Critical data unavailable')) {
+        console.log('Attempting to reconnect to inverter...');
         this.modbusClient.connected = false;
-        const reconnected = await this.modbusClient.connect();
-        if (!reconnected) {
-          this.stop();
+        try {
+          const reconnected = await this.modbusClient.connect();
+          if (reconnected) {
+            console.log('✓ Reconnected to inverter');
+          } else {
+            console.error('Failed to reconnect, stopping polling');
+            this.stop();
+          }
+        } catch (reconnectError) {
+          console.error('Reconnection error:', reconnectError.message);
         }
       }
     }
