@@ -126,7 +126,8 @@ export class MqttPublisher {
 
     if (data.systemStatus) {
       const mode = this.mapInverterMode(data.systemStatus.stateText);
-      this.publish('electrical.inverters.0.inverterMode', { value: mode });
+      this.publish('electrical.inverters.0.mode', mode);
+      this.publish('electrical.inverters.0.modeText', data.systemStatus.stateText);
       this.publish('electrical.inverters.0.state', data.systemStatus.state);
     }
 
