@@ -98,7 +98,7 @@
               "type": "widget-numeric",
               "uuid": "batt-soc",
               "config": {
-                "displayName": "Battery SoC (%)",
+                "displayName": "Battery SoC",
                 "filterSelfPaths": true,
                 "paths": {
                   "numericPath": {
@@ -132,7 +132,7 @@
               "type": "widget-numeric",
               "uuid": "batt-volt",
               "config": {
-                "displayName": "Battery Voltage (V)",
+                "displayName": "Battery Voltage",
                 "filterSelfPaths": true,
                 "paths": {
                   "numericPath": {
@@ -166,7 +166,7 @@
               "type": "widget-numeric",
               "uuid": "batt-current",
               "config": {
-                "displayName": "Battery Current (A)",
+                "displayName": "Battery Current",
                 "filterSelfPaths": true,
                 "paths": {
                   "numericPath": {
@@ -200,7 +200,7 @@
               "type": "widget-numeric",
               "uuid": "ac-in-power",
               "config": {
-                "displayName": "AC Input Power (W)",
+                "displayName": "AC Input Power",
                 "filterSelfPaths": true,
                 "paths": {
                   "numericPath": {
@@ -234,7 +234,7 @@
               "type": "widget-numeric",
               "uuid": "ac-out-power",
               "config": {
-                "displayName": "Load Power (W)",
+                "displayName": "Load Power",
                 "filterSelfPaths": true,
                 "paths": {
                   "numericPath": {
@@ -268,7 +268,7 @@
               "type": "widget-numeric",
               "uuid": "solar-power",
               "config": {
-                "displayName": "Solar Power (W)",
+                "displayName": "Solar Power",
                 "filterSelfPaths": true,
                 "paths": {
                   "numericPath": {

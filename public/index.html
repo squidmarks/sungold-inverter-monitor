@@ -934,8 +934,8 @@
         updateElement('summary-voltage', b.voltage, 1, '');
         
         const current = Math.abs(b.current || 0);
-        const direction = b.current > 0 ? ' (Discharge)' : b.current < 0 ? ' (Charge)' : '';
-        document.getElementById('bat-current').innerHTML = `${current.toFixed(1)}<span class="unit">A${direction}</span>`;
+        const direction = b.current > 0 ? '(Discharge) ' : b.current < 0 ? '(Charge) ' : '';
+        document.getElementById('bat-current').innerHTML = `<span class="unit">${direction}</span>${current.toFixed(1)}<span class="unit">A</span>`;
         updateElement('summary-current', current, 1, '');
         
         updateElement('bat-temp', b.temperature, 1, '°C');
