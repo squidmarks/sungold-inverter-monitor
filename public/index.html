@@ -929,14 +929,14 @@
         const b = data.battery;
         
         updateElement('bat-soc', b.soc, 0, '%');
-        updateElement('summary-soc', b.soc, 0, '');
+        updateElement('summary-soc', b.soc, 0, '%');
         updateElement('bat-voltage', b.voltage, 1, 'V');
-        updateElement('summary-voltage', b.voltage, 1, '');
+        updateElement('summary-voltage', b.voltage, 1, 'V');
         
         const current = Math.abs(b.current || 0);
-        const direction = b.current > 0 ? '(Discharge) ' : b.current < 0 ? '(Charge) ' : '';
+        const direction = b.current > 0 ? '(Discharging) ' : b.current < 0 ? '(Charging) ' : '';
         document.getElementById('bat-current').innerHTML = `<span class="unit">${direction}</span>${current.toFixed(1)}<span class="unit">A</span>`;
-        updateElement('summary-current', current, 1, '');
+        updateElement('summary-current', current, 1, 'A');
         
         updateElement('bat-temp', b.temperature, 1, '°C');
         updateElement('bat-charge-power', b.chargePower, 0, 'W');
@@ -955,7 +955,7 @@
         }
 
         updateElement('pv-total', b.pvTotalPower, 0, 'W');
-        updateElement('summary-pv', b.pvTotalPower, 0, '');
+        updateElement('summary-pv', b.pvTotalPower, 0, 'W');
 
         if (b.bms) {
           updateElement('bms-voltage', b.bms.voltage, 1, 'V');
@@ -1012,7 +1012,7 @@
 
         const totalLoad = (data.ac.load?.l1?.activePower || 0) + (data.ac.load?.l2?.activePower || 0);
         updateElement('load-total', totalLoad, 0, 'W');
-        updateElement('summary-load', totalLoad, 0, '');
+        updateElement('summary-load', totalLoad, 0, 'W');
 
         if (data.ac.temperatures) {
           updateElement('temp-dcdc', data.ac.temperatures.dcDc, 1, '°C');
