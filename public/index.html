@@ -455,6 +455,10 @@
       <div class="status-dot connected" id="inverter-dot" title="Inverter"></div>
     </div>
     <div class="status-indicator">
+      <span style="font-size: 14px; margin-right: 4px;">📡</span>
+      <div class="status-dot connected" id="mqtt-dot" title="MQTT"></div>
+    </div>
+    <div class="status-indicator">
       <span id="state-badge" class="state-badge state-standby">STANDBY</span>
     </div>
     <div class="theme-switch" onclick="toggleTheme()">
@@ -856,8 +860,14 @@
         }
         
         const inverterDot = document.getElementById('inverter-dot');
+        const mqttDot = document.getElementById('mqtt-dot');
+        
         if (data.inverterConnected !== undefined) {
           inverterDot.className = data.inverterConnected ? 'status-dot connected' : 'status-dot error';
+        }
+        
+        if (data.mqttConnected !== undefined) {
+          mqttDot.className = data.mqttConnected ? 'status-dot connected' : 'status-dot error';
         }
         
         if (data.systemStatus || data.battery || data.ac) {
@@ -879,6 +889,7 @@
       console.log('SSE connection established');
       document.getElementById('status-dot').className = 'status-dot connected';
       document.getElementById('inverter-dot').className = 'status-dot connected';
+      document.getElementById('mqtt-dot').className = 'status-dot connected';
     };
 
     setInterval(() => {

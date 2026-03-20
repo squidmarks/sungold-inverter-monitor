@@ -57,6 +57,7 @@ export class PollingService {
       const payload = {
         timestamp: new Date().toISOString(),
         inverterConnected: true,
+        mqttConnected: this.mqttPublisher ? this.mqttPublisher.connected : false,
         systemStatus,
         battery,
         ac,
@@ -78,6 +79,7 @@ export class PollingService {
         this.webServer.broadcastData({
           timestamp: new Date().toISOString(),
           inverterConnected: false,
+          mqttConnected: this.mqttPublisher ? this.mqttPublisher.connected : false,
           error: error.message
         });
       }
