@@ -1,108 +1,162 @@
 # Sungold Inverter Monitor
 
-Node.js application for monitoring Sungold inverter on M/Y Jefferson 48 via Modbus TCP, with future MQTT integration for SignalK.
+Node.js application to monitor a Sungold inverter (SPH6548P) via Modbus TCP and publish data to SignalK via MQTT.
 
-## Overview
+## Features
 
-This application connects to a Sungold inverter through a Waveshare RS-485 to WiFi bridge and polls real-time data including:
+- **Real-time Modbus TCP monitoring** - Custom lightweight client for reliable communication
+- **Mobile-friendly web dashboard** - Responsive tabbed interface with live updates
+- **SignalK integration** - Publishes to MQTT with SignalK-compliant paths
+- **Split-phase AC support** - Monitors L1/L2 voltage, current, and power
+- **Battery monitoring** - SoC, voltage, current, temperature, BMS data
+- **Solar PV tracking** - Dual string monitoring with power generation
+- **Energy statistics** - Daily and lifetime energy counters
+- **Light/Dark mode** - User-selectable theme with persistence
 
-- **System Status**: Current operating mode (inverting, bypass, standby, etc.)
-- **Battery**: SOC, voltage, current, temperature, BMS data, charge state
-- **Solar PV**: Voltage, current, and power from both PV strings
-- **AC Input**: L1/L2 voltage, current, power, frequency (shore power/generator)
-- **Inverter Output**: L1/L2 voltage, current, frequency
-- **Load**: L1/L2 current, active/apparent power, load percentage
-- **Temperatures**: DC-DC heatsink, DC-AC heatsink, transformer, ambient
-- **Energy Statistics**: Daily and lifetime kWh/Ah totals, runtime statistics
+## Hardware Setup
+
+- Sungold SPH6548P Inverter
+- Waveshare RS-485 to WiFi bridge (configured for Modbus TCP)
+- Raspberry Pi (or any Node.js compatible device) on the same network
 
 ## Installation
 
+### On Raspberry Pi
+
 ```bash
+# Clone the repository
+git clone git@github.com:squidmarks/sungold-inverter-monitor.git
+cd sungold-inverter-monitor
+
+# Install dependencies
 npm install
+
+# Configure environment
+cp .env.example .env
+nano .env
 ```
 
-## Configuration
+### Configuration
 
-Edit `.env` file with your settings:
+Edit `.env` with your settings:
 
+```env
+INVERTER_HOST=192.168.1.194          # IP address of RS-485 to WiFi bridge
+INVERTER_PORT=8899                   # Modbus TCP port
+SLAVE_ID=1                           # Modbus slave ID
+MQTT_HOST=localhost                  # MQTT broker host (SignalK)
+MQTT_PORT=1883                       # MQTT broker port
+MQTT_BASE_TOPIC=vessels/self         # SignalK base topic
+POLL_INTERVAL_MS=3000                # Polling interval (3 seconds recommended)
+WEB_PORT=3000                        # Web dashboard port
 ```
-INVERTER_HOST=192.168.1.194
-INVERTER_PORT=8899
-SLAVE_ID=1
-MQTT_HOST=becoming-hub
-MQTT_PORT=1883
-POLL_INTERVAL_MS=5000
-```
 
-## Usage
+## Running
 
-Start monitoring:
+### Manual Start
 
 ```bash
 npm start
 ```
 
-Or with Node.js watch mode for development:
+Access the dashboard at `http://localhost:3000` or `http://<pi-ip-address>:3000`
+
+### Run as System Service (Auto-start on boot)
 
 ```bash
-npm run dev
+# Copy the service file
+sudo cp inverter-monitor.service /etc/systemd/system/
+
+# Edit if your paths differ
+sudo nano /etc/systemd/system/inverter-monitor.service
+
+# Reload systemd, enable and start the service
+sudo systemctl daemon-reload
+sudo systemctl enable inverter-monitor
+sudo systemctl start inverter-monitor
+
+# Check status
+sudo systemctl status inverter-monitor
+
+# View logs
+sudo journalctl -u inverter-monitor -f
 ```
 
-This will:
-1. Start the Modbus TCP client and connect to the inverter
-2. Launch a web server on port 3000 (configurable in `.env`)
-3. Begin polling inverter data every 5 seconds
-4. Display real-time data in the terminal
-5. Serve a live dashboard at `http://localhost:3000`
+## SignalK Integration
 
-**Access the Web Dashboard:**
-- Local: `http://localhost:3000`
-- From other devices: `http://<pi-ip-address>:3000`
+The monitor publishes data to MQTT using SignalK-compliant paths under `vessels/self/electrical/`:
 
-The dashboard updates automatically in real-time using Server-Sent Events (SSE).
+- **Batteries**: `electrical.batteries.0.*` (voltage, current, SoC, temperature)
+- **Solar**: `electrical.solar.0.*` and `electrical.solar.1.*` (PV string 1 & 2)
+- **Inverter AC Input**: `electrical.inverters.0.acin.*` (shore/generator power)
+- **Inverter AC Output**: `electrical.inverters.0.acout.*` (inverter output and load)
+- **Temperatures**: `electrical.inverters.0.temperature.*` (in Kelvin)
+- **State**: `electrical.inverters.0.state` and `electrical.inverters.0.stateText`
 
-Press `Ctrl+C` to stop.
+Data will automatically appear in SignalK's Data Browser when the MQTT Gateway plugin is enabled.
 
-## Architecture
+## Web Dashboard
 
-- **index.js** - Main entry point, handles initialization and graceful shutdown
-- **config.js** - Configuration loader from .env file
-- **registers.js** - Modbus register definitions from protocol specification
-- **modbus-client.js** - Custom Modbus TCP client implementation with buffered responses
-- **data-parser.js** - Parses raw register data into structured format
-- **polling-service.js** - Manages periodic polling and error handling
-- **terminal-formatter.js** - Formats data for terminal display
-- **web-server.js** - Express server with SSE for real-time web dashboard
-- **public/index.html** - Marine-themed web dashboard with live updates
+The dashboard provides a mobile-optimized interface with tabs:
 
-## Protocol Details
+- **Overview** - Key metrics, system runtime, energy summary
+- **Battery** - Battery status, BMS data
+- **Solar** - PV strings, energy generation
+- **AC Power** - Load, AC input/output, temperatures
 
-Based on "MODBUS Monitoring Protocol Register Address Table-V2.00" from Sungold:
+Features:
+- Real-time updates via Server-Sent Events
+- Light/Dark mode toggle
+- Responsive design for mobile devices
+- Sticky footer with status indicator
 
-- **Protocol**: Modbus RTU over TCP
-- **Function Codes**: 0x03 (read holding registers)
-- **Max Registers per Read**: 32
-- **Slave ID**: 1 (configurable)
-- **Data Encoding**: 16-bit registers, 32-bit values in little-endian (low word first)
-- **Scaling**: Various multipliers (0.1, 0.01, etc.) documented per register
+## Troubleshooting
 
-## Next Steps
+### MQTT Connection Issues
 
-- [ ] Validate data accuracy against inverter display
-- [ ] Add MQTT publisher for SignalK integration
-- [ ] Map data to SignalK electrical paths
-- [ ] Add system service configuration for auto-start on Pi
-- [ ] Implement reconnection logic for network interruptions
-- [ ] Add logging for historical data analysis
+```bash
+# Test MQTT connection
+mosquitto_sub -h localhost -t 'vessels/self/electrical/#' -v
 
-## Marine Electrical System
+# Check if port 1883 is listening
+sudo netstat -tlnp | grep 1883
+```
 
-This inverter is configured as the central power distribution point:
-- Shore power and generator feed the inverter input
-- Main panel is powered by inverter output
-- System operates in split-phase configuration (L1/L2)
-- Integration with NMEA 2000 via SignalK for unified monitoring
+### Modbus Connection Issues
+
+- Verify inverter IP address and port
+- Check RS-485 to WiFi bridge configuration
+- Ensure network connectivity: `ping <INVERTER_HOST>`
+- Test Modbus connection: `npm run test` (if available)
+
+### View Logs
+
+```bash
+# If running as systemd service
+sudo journalctl -u inverter-monitor -f
+
+# If running manually
+# Logs are output to stdout
+```
+
+## Development
+
+The codebase is organized into modules:
+
+- `index.js` - Application entry point
+- `modbus-client.js` - Custom Modbus TCP client
+- `registers.js` - Register definitions from inverter protocol
+- `data-parser.js` - Raw register data parser
+- `polling-service.js` - Polling orchestration
+- `mqtt-publisher.js` - SignalK-compliant MQTT publisher
+- `web-server.js` - Express server with SSE support
+- `terminal-formatter.js` - Terminal output formatting (legacy)
+- `config.js` - Configuration loader
 
 ## License
 
 MIT
+
+## Credits
+
+Built for M/Y Jefferson 48 - Monitoring a Sungold SPH6548P split-phase inverter system.
