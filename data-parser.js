@@ -125,7 +125,17 @@ export class InverterDataParser {
         dcDc: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_A.address, REGISTERS.INVERTER_DATA.TEMPER_A) : null,
         dcAc: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_B.address, REGISTERS.INVERTER_DATA.TEMPER_B) : null,
         transformer: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_C.address, REGISTERS.INVERTER_DATA.TEMPER_C) : null,
-        ambient: tempsData ? this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_D.address, REGISTERS.INVERTER_DATA.TEMPER_D) : null,
+        ambient: (() => {
+          if (tempsData) {
+            const offset = REGISTERS.INVERTER_DATA.TEMPER_D.address - baseAddrTemps;
+            const rawValue = tempsData[offset];
+            const signedValue = rawValue > 32767 ? rawValue - 65536 : rawValue;
+            const scaled = signedValue * 0.1;
+            console.log(`🌡️ Ambient temp - Raw: ${rawValue}, Signed: ${signedValue}, Scaled: ${scaled}°C`);
+            return this.client.extractRegisterValue(tempsData, baseAddrTemps, REGISTERS.INVERTER_DATA.TEMPER_D.address, REGISTERS.INVERTER_DATA.TEMPER_D);
+          }
+          return null;
+        })(),
       },
       lineChargeCurrent: basicData2 ? basicData2[3] * 0.1 : null,
       busVoltage: basicData1 ? basicData1[0] * 0.1 : null,
