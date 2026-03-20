@@ -37,11 +37,21 @@ export class PollingService {
     console.log('Polling service stopped');
   }
 
-  checkForErrors(data, context) {
+  checkForErrors(data, context, required = false) {
+    let hasAnyData = false;
+    let errorCount = 0;
+    
     for (const key in data) {
       if (data[key].error) {
-        throw new Error(`${context} error: ${data[key].error}`);
+        console.warn(`${context} - ${key}: ${data[key].error}`);
+        errorCount++;
+      } else if (data[key].data) {
+        hasAnyData = true;
       }
+    }
+    
+    if (required && !hasAnyData) {
+      throw new Error(`${context}: Critical data unavailable (all register groups failed)`);
     }
   }
 
@@ -54,19 +64,19 @@ export class PollingService {
       const energyGroups = REGISTER_GROUPS.ENERGY;
 
       const systemStatusData = await this.modbusClient.readRegisterGroups(systemStatusGroups);
-      this.checkForErrors(systemStatusData, 'System status');
+      this.checkForErrors(systemStatusData, 'System status', true);
       console.log('System status read');
       
       const batteryData = await this.modbusClient.readRegisterGroups(batteryGroups);
-      this.checkForErrors(batteryData, 'Battery data');
+      this.checkForErrors(batteryData, 'Battery data', false);
       console.log('Battery data read');
       
       const acData = await this.modbusClient.readRegisterGroups(acGroups);
-      this.checkForErrors(acData, 'AC data');
+      this.checkForErrors(acData, 'AC data', false);
       console.log('AC data read');
       
       const energyData = await this.modbusClient.readRegisterGroups(energyGroups);
-      this.checkForErrors(energyData, 'Energy data');
+      this.checkForErrors(energyData, 'Energy data', false);
       console.log('Energy data read');
 
       const systemStatus = this.parser.parseSystemStatus(systemStatusData);
