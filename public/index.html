@@ -25,61 +25,111 @@
       --light-gray: #e0e0e0;
       --gray: #9e9e9e;
       --border: #263238;
+      
+      --bg-gradient-start: #050c15;
+      --bg-gradient-end: #0a1929;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: #263238;
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #9e9e9e;
+      --footer-bg: rgba(5, 12, 21, 0.95);
+      --tab-bg: rgba(0, 0, 0, 0.3);
+    }
+
+    body.light-mode {
+      --navy: #e3f2fd;
+      --dark-navy: #bbdefb;
+      --blue: #1976d2;
+      --light-blue: #2196f3;
+      --cyan: #0097a7;
+      --border: #90caf9;
+      
+      --bg-gradient-start: #e3f2fd;
+      --bg-gradient-end: #bbdefb;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --card-border: #90caf9;
+      --text-primary: #0d47a1;
+      --text-secondary: #1565c0;
+      --text-muted: #5e92f3;
+      --footer-bg: rgba(227, 242, 253, 0.95);
+      --tab-bg: rgba(187, 222, 251, 0.8);
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: linear-gradient(135deg, var(--dark-navy) 0%, var(--navy) 100%);
-      color: var(--white);
-      padding: 20px;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--text-primary);
       min-height: 100vh;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-      padding: 20px;
-      border-bottom: 2px solid var(--blue);
-    }
-
-    .header h1 {
-      font-size: 2.2rem;
-      font-weight: 300;
-      letter-spacing: 2px;
-      color: var(--cyan);
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .header .vessel {
-      font-size: 1.4rem;
-      color: var(--light-blue);
-      font-weight: 200;
-    }
-
-    .header .timestamp {
-      font-size: 0.9rem;
-      color: var(--gray);
-      margin-top: 10px;
+      padding-bottom: 50px;
+      transition: background 0.3s, color 0.3s;
     }
 
     .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
       display: flex;
-      justify-content: center;
+      justify-content: space-around;
       align-items: center;
-      gap: 30px;
-      margin-bottom: 30px;
-      padding: 15px;
-      background: rgba(30, 136, 229, 0.1);
-      border-radius: 8px;
-      border: 1px solid var(--border);
+      gap: 15px;
+      padding: 8px 15px;
+      background: var(--footer-bg);
+      backdrop-filter: blur(10px);
+      border-top: 2px solid var(--blue);
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+
+    .theme-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: var(--border);
+      border-radius: 12px;
+      transition: background 0.3s;
+    }
+
+    .switch-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: var(--white);
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .switch.active {
+      background: var(--cyan);
+    }
+
+    .switch.active .switch-slider {
+      transform: translateX(20px);
     }
 
     .status-indicator {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 1.1rem;
+      gap: 0px;
+    }
+
+    .timestamp {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-weight: 500;
     }
 
     .status-dot {
@@ -91,12 +141,12 @@
 
     .status-dot.connected {
       background: var(--green);
-      box-shadow: 0 0 10px var(--green);
+      box-shadow: 0 0 8px var(--green);
     }
 
     .status-dot.error {
       background: var(--red);
-      box-shadow: 0 0 10px var(--red);
+      box-shadow: 0 0 8px var(--red);
     }
 
     @keyframes pulse {
@@ -104,43 +154,118 @@
       50% { opacity: 0.6; }
     }
 
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      background: var(--tab-bg);
+      border-bottom: 2px solid var(--border);
+      -webkit-overflow-scrolling: touch;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .tab {
+      flex: 1;
+      min-width: 100px;
+      padding: 15px 10px;
+      text-align: center;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab:hover {
+      color: var(--light-blue);
+      background: rgba(30, 136, 229, 0.1);
+    }
+
+    .tab.active {
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+      background: rgba(0, 188, 212, 0.1);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 15px 15px 20px 15px;
+      animation: fadeIn 0.3s;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 20px;
+      margin-bottom: 15px;
       backdrop-filter: blur(10px);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 188, 212, 0.2);
+      transition: background 0.3s, border 0.3s;
     }
 
     .card-title {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 500;
       color: var(--cyan);
       margin-bottom: 15px;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+
+    .hero-metric {
+      text-align: center;
+      padding: 25px 15px;
+      background: rgba(30, 136, 229, 0.1);
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border: 1px solid var(--card-border);
+      transition: background 0.3s, border 0.3s;
+    }
+
+    .hero-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .hero-value {
+      font-size: 3rem;
+      font-weight: 300;
+      color: var(--cyan);
+      line-height: 1;
+    }
+
+    .hero-unit {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      margin-left: 5px;
     }
 
     .metric-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
@@ -149,19 +274,14 @@
     }
 
     .metric-label {
-      color: var(--light-gray);
+      color: var(--text-secondary);
       font-size: 0.95rem;
     }
 
     .metric-value {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 500;
-      color: var(--white);
-    }
-
-    .metric-value.large {
-      font-size: 2rem;
-      color: var(--light-blue);
+      color: var(--text-primary);
     }
 
     .metric-value.good {
@@ -179,7 +299,7 @@
     .phase-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
+      gap: 12px;
       margin-top: 10px;
     }
 
@@ -187,37 +307,39 @@
       background: rgba(30, 136, 229, 0.1);
       padding: 15px;
       border-radius: 8px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--card-border);
+      transition: background 0.3s, border 0.3s;
     }
 
     .phase-title {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--cyan);
       margin-bottom: 10px;
       font-weight: 600;
+      text-transform: uppercase;
     }
 
     .phase-metric {
       display: flex;
       justify-content: space-between;
-      padding: 5px 0;
+      padding: 6px 0;
       font-size: 0.9rem;
     }
 
     .unit {
-      font-size: 0.85rem;
-      color: var(--gray);
-      margin-left: 3px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: 2px;
     }
 
     .state-badge {
       display: inline-block;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 1rem;
-      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
 
     .state-inverting {
@@ -246,57 +368,187 @@
       50% { opacity: 0.5; }
     }
 
-    .footer {
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .summary-card {
+      background: rgba(30, 136, 229, 0.1);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 15px;
       text-align: center;
-      margin-top: 30px;
-      padding: 20px;
-      color: var(--gray);
-      font-size: 0.85rem;
-      border-top: 1px solid var(--border);
+      transition: background 0.3s, border 0.3s;
+    }
+
+    .summary-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .summary-value {
+      font-size: 1.8rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .summary-unit {
+      font-size: 0.9rem;
+      color: var(--text-muted);
     }
 
     @media (max-width: 768px) {
-      .grid-container {
-        grid-template-columns: 1fr;
+      body {
+        padding-bottom: 50px;
       }
 
-      .phase-grid {
-        grid-template-columns: 1fr;
+      .status-bar {
+        gap: 12px;
+        padding: 8px 10px;
       }
 
-      .header h1 {
+      .timestamp {
+        font-size: 0.75rem;
+      }
+
+      .tab {
+        font-size: 0.75rem;
+        padding: 12px 8px;
+        min-width: 80px;
+      }
+
+      .hero-value {
+        font-size: 2.5rem;
+      }
+
+      .metric-value {
+        font-size: 1.2rem;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      .summary-value {
         font-size: 1.5rem;
-      }
-
-      .header .vessel {
-        font-size: 1.1rem;
       }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Sungold Inverter Monitor</h1>
-    <div class="vessel">M/Y Jefferson 48</div>
-    <div class="timestamp" id="timestamp">--</div>
-  </div>
-
   <div class="status-bar">
     <div class="status-indicator">
       <div class="status-dot connected" id="status-dot"></div>
-      <span id="connection-status">Connected</span>
     </div>
     <div class="status-indicator">
       <span id="state-badge" class="state-badge state-standby">STANDBY</span>
     </div>
+    <div class="theme-switch" onclick="toggleTheme()">
+      <span>☀️</span>
+      <div class="switch" id="theme-toggle">
+        <div class="switch-slider"></div>
+      </div>
+      <span>🌙</span>
+    </div>
+    <div class="timestamp" id="timestamp">--</div>
   </div>
 
-  <div class="grid-container">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('summary')">Overview</button>
+    <button class="tab" onclick="showTab('battery')">Battery</button>
+    <button class="tab" onclick="showTab('solar')">Solar</button>
+    <button class="tab" onclick="showTab('power')">AC Power</button>
+  </div>
+
+  <div id="summary" class="tab-content active">
+    <div class="hero-metric">
+      <div class="hero-label">Battery State of Charge</div>
+      <div class="hero-value" id="summary-soc">--<span class="hero-unit">%</span></div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Battery Voltage</div>
+        <div class="summary-value" id="summary-voltage">--<span class="summary-unit">V</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Battery Current</div>
+        <div class="summary-value" id="summary-current">--<span class="summary-unit">A</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Total Load</div>
+        <div class="summary-value" id="summary-load">--<span class="summary-unit">W</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Solar Power</div>
+        <div class="summary-value" id="summary-pv">--<span class="summary-unit">W</span></div>
+      </div>
+    </div>
+
     <div class="card">
-      <div class="card-title">⚡ Battery</div>
+      <div class="card-title">AC Input (Shore/Gen)</div>
+      <div class="phase-grid">
+        <div class="phase-box">
+          <div class="phase-title">L1</div>
+          <div class="phase-metric">
+            <span>Voltage:</span>
+            <span id="summary-grid-l1-v">--<span class="unit">V</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Power:</span>
+            <span id="summary-grid-l1-p">--<span class="unit">W</span></span>
+          </div>
+        </div>
+        <div class="phase-box">
+          <div class="phase-title">L2</div>
+          <div class="phase-metric">
+            <span>Voltage:</span>
+            <span id="summary-grid-l2-v">--<span class="unit">V</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Power:</span>
+            <span id="summary-grid-l2-p">--<span class="unit">W</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Energy Today</div>
+      <div class="metric-row">
+        <span class="metric-label">Load Consumed</span>
+        <span class="metric-value" id="summary-energy-load">--<span class="unit">kWh</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Solar Generated</span>
+        <span class="metric-value" id="summary-energy-pv">--<span class="unit">kWh</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">System Runtime</div>
+      <div class="metric-row">
+        <span class="metric-label">Operating Days</span>
+        <span class="metric-value" id="summary-runtime-days">--<span class="unit">days</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Total Runtime</span>
+        <span class="metric-value" id="summary-runtime-total">--<span class="unit">hrs</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="battery" class="tab-content">
+    <div class="card">
+      <div class="card-title">Battery Status</div>
       <div class="metric-row">
         <span class="metric-label">State of Charge</span>
-        <span class="metric-value large" id="bat-soc">--%</span>
+        <span class="metric-value" id="bat-soc">--%</span>
       </div>
       <div class="metric-row">
         <span class="metric-label">Voltage</span>
@@ -314,17 +566,47 @@
         <span class="metric-label">Charge State</span>
         <span class="metric-value" id="bat-charge-state">--</span>
       </div>
+      <div class="metric-row">
+        <span class="metric-label">Charge Power</span>
+        <span class="metric-value" id="bat-charge-power">--<span class="unit">W</span></span>
+      </div>
     </div>
 
     <div class="card">
-      <div class="card-title">☀️ Solar PV</div>
+      <div class="card-title">BMS Data</div>
+      <div class="metric-row">
+        <span class="metric-label">BMS Voltage</span>
+        <span class="metric-value" id="bms-voltage">--<span class="unit">V</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">BMS Current</span>
+        <span class="metric-value" id="bms-current">--<span class="unit">A</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">BMS SOC</span>
+        <span class="metric-value" id="bms-soc">--<span class="unit">%</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">BMS Temperature</span>
+        <span class="metric-value" id="bms-temp">--<span class="unit">°C</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="solar" class="tab-content">
+    <div class="card">
+      <div class="card-title">Solar PV Overview</div>
       <div class="metric-row">
         <span class="metric-label">Total Power</span>
-        <span class="metric-value large" id="pv-total">--<span class="unit">W</span></span>
+        <span class="metric-value" id="pv-total">--<span class="unit">W</span></span>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">PV Strings</div>
       <div class="phase-grid">
         <div class="phase-box">
-          <div class="phase-title">PV String 1</div>
+          <div class="phase-title">String 1</div>
           <div class="phase-metric">
             <span>Voltage:</span>
             <span id="pv1-voltage">--<span class="unit">V</span></span>
@@ -339,7 +621,7 @@
           </div>
         </div>
         <div class="phase-box">
-          <div class="phase-title">PV String 2</div>
+          <div class="phase-title">String 2</div>
           <div class="phase-metric">
             <span>Voltage:</span>
             <span id="pv2-voltage">--<span class="unit">V</span></span>
@@ -357,7 +639,73 @@
     </div>
 
     <div class="card">
-      <div class="card-title">🔌 AC Input (Shore/Generator)</div>
+      <div class="card-title">Solar Energy</div>
+      <div class="metric-row">
+        <span class="metric-label">Generated Today</span>
+        <span class="metric-value" id="solar-energy-today">--<span class="unit">kWh</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Lifetime Total</span>
+        <span class="metric-value" id="solar-energy-total">--<span class="unit">kWh</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="power" class="tab-content">
+    <div class="card">
+      <div class="card-title">Total Load</div>
+      <div class="metric-row">
+        <span class="metric-label">Total Power</span>
+        <span class="metric-value" id="load-total">--<span class="unit">W</span></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Load by Phase</div>
+      <div class="phase-grid">
+        <div class="phase-box">
+          <div class="phase-title">L1</div>
+          <div class="phase-metric">
+            <span>Current:</span>
+            <span id="load-l1-current">--<span class="unit">A</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Power:</span>
+            <span id="load-l1-power">--<span class="unit">W</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Apparent:</span>
+            <span id="load-l1-apparent">--<span class="unit">VA</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Load:</span>
+            <span id="load-l1-ratio">--<span class="unit">%</span></span>
+          </div>
+        </div>
+        <div class="phase-box">
+          <div class="phase-title">L2</div>
+          <div class="phase-metric">
+            <span>Current:</span>
+            <span id="load-l2-current">--<span class="unit">A</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Power:</span>
+            <span id="load-l2-power">--<span class="unit">W</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Apparent:</span>
+            <span id="load-l2-apparent">--<span class="unit">VA</span></span>
+          </div>
+          <div class="phase-metric">
+            <span>Load:</span>
+            <span id="load-l2-ratio">--<span class="unit">%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">AC Input (Shore/Generator)</div>
       <div class="metric-row">
         <span class="metric-label">Frequency</span>
         <span class="metric-value" id="grid-freq">--<span class="unit">Hz</span></span>
@@ -397,7 +745,7 @@
     </div>
 
     <div class="card">
-      <div class="card-title">⚡ Inverter Output</div>
+      <div class="card-title">Inverter Output</div>
       <div class="metric-row">
         <span class="metric-label">Frequency</span>
         <span class="metric-value" id="inv-freq">--<span class="unit">Hz</span></span>
@@ -429,47 +777,7 @@
     </div>
 
     <div class="card">
-      <div class="card-title">🏠 Load</div>
-      <div class="metric-row">
-        <span class="metric-label">Total Power</span>
-        <span class="metric-value large" id="load-total">--<span class="unit">W</span></span>
-      </div>
-      <div class="phase-grid">
-        <div class="phase-box">
-          <div class="phase-title">L1</div>
-          <div class="phase-metric">
-            <span>Current:</span>
-            <span id="load-l1-current">--<span class="unit">A</span></span>
-          </div>
-          <div class="phase-metric">
-            <span>Power:</span>
-            <span id="load-l1-power">--<span class="unit">W</span></span>
-          </div>
-          <div class="phase-metric">
-            <span>Load:</span>
-            <span id="load-l1-ratio">--<span class="unit">%</span></span>
-          </div>
-        </div>
-        <div class="phase-box">
-          <div class="phase-title">L2</div>
-          <div class="phase-metric">
-            <span>Current:</span>
-            <span id="load-l2-current">--<span class="unit">A</span></span>
-          </div>
-          <div class="phase-metric">
-            <span>Power:</span>
-            <span id="load-l2-power">--<span class="unit">W</span></span>
-          </div>
-          <div class="phase-metric">
-            <span>Load:</span>
-            <span id="load-l2-ratio">--<span class="unit">%</span></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🌡️ Temperatures</div>
+      <div class="card-title">Temperatures</div>
       <div class="metric-row">
         <span class="metric-label">DC-DC Heatsink</span>
         <span class="metric-value" id="temp-dcdc">--<span class="unit">°C</span></span>
@@ -487,54 +795,47 @@
         <span class="metric-value" id="temp-ambient">--<span class="unit">°C</span></span>
       </div>
     </div>
-
-    <div class="card">
-      <div class="card-title">📊 Energy Today</div>
-      <div class="metric-row">
-        <span class="metric-label">PV Generated</span>
-        <span class="metric-value" id="energy-pv-today">--<span class="unit">kWh</span></span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Battery Charged</span>
-        <span class="metric-value" id="energy-bat-chg-today">--<span class="unit">kWh</span></span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Battery Discharged</span>
-        <span class="metric-value" id="energy-bat-dchg-today">--<span class="unit">kWh</span></span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Load Consumed</span>
-        <span class="metric-value" id="energy-load-today">--<span class="unit">kWh</span></span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📈 Lifetime Statistics</div>
-      <div class="metric-row">
-        <span class="metric-label">Operating Days</span>
-        <span class="metric-value" id="energy-days">--<span class="unit">days</span></span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">PV Generated</span>
-        <span class="metric-value" id="energy-pv-total">--<span class="unit">kWh</span></span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Battery Cycled</span>
-        <span class="metric-value" id="energy-bat-total">--<span class="unit">kWh</span></span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Total Runtime</span>
-        <span class="metric-value" id="energy-runtime">--<span class="unit">hrs</span></span>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    <div>Sungold Inverter Monitoring System</div>
-    <div style="margin-top: 5px;">Real-time data via Modbus TCP</div>
   </div>
 
   <script>
+    function showTab(tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      const contents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => tab.classList.remove('active'));
+      contents.forEach(content => content.classList.remove('active'));
+      
+      const activeTab = Array.from(tabs).find(tab => 
+        tab.getAttribute('onclick').includes(`'${tabName}'`)
+      );
+      if (activeTab) activeTab.classList.add('active');
+      
+      document.getElementById(tabName).classList.add('active');
+      localStorage.setItem('activeTab', tabName);
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const toggle = document.getElementById('theme-toggle');
+      
+      body.classList.toggle('light-mode');
+      toggle.classList.toggle('active');
+      
+      const isLight = body.classList.contains('light-mode');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
+
+    window.addEventListener('load', () => {
+      const savedTab = localStorage.getItem('activeTab') || 'summary';
+      showTab(savedTab);
+      
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('theme-toggle').classList.add('active');
+      }
+    });
+
     const eventSource = new EventSource('/events');
     let lastUpdate = Date.now();
 
@@ -546,36 +847,38 @@
         }
         updateDashboard(data);
         lastUpdate = Date.now();
+        
+        document.getElementById('status-dot').className = 'status-dot connected';
       } catch (error) {
-        console.error('Error parsing data:', error);
+        console.error('Error parsing SSE data:', error);
       }
     };
 
     eventSource.onerror = () => {
-      document.getElementById('connection-status').textContent = 'Disconnected';
       document.getElementById('status-dot').className = 'status-dot error';
     };
 
     eventSource.onopen = () => {
-      document.getElementById('connection-status').textContent = 'Connected';
+      console.log('SSE connection established');
       document.getElementById('status-dot').className = 'status-dot connected';
     };
 
     setInterval(() => {
       const elapsed = Date.now() - lastUpdate;
       if (elapsed > 15000) {
-        document.getElementById('connection-status').textContent = 'Connection Lost';
         document.getElementById('status-dot').className = 'status-dot error';
       }
     }, 5000);
 
     function updateDashboard(data) {
-      document.getElementById('timestamp').textContent = new Date().toLocaleString();
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      document.getElementById('timestamp').textContent = timeStr;
 
       if (data.systemStatus) {
         const state = data.systemStatus.stateText || 'Unknown';
         const badge = document.getElementById('state-badge');
-        badge.textContent = state.toUpperCase();
+        badge.textContent = state.toUpperCase().replace('OPERATION', '').replace('AC POWER', 'BYPASS').trim();
         
         badge.className = 'state-badge';
         if (state.includes('Inverter')) badge.classList.add('state-inverting');
@@ -586,14 +889,19 @@
 
       if (data.battery) {
         const b = data.battery;
+        
         updateElement('bat-soc', b.soc, 0, '%');
+        updateElement('summary-soc', b.soc, 0, '');
         updateElement('bat-voltage', b.voltage, 1, 'V');
+        updateElement('summary-voltage', b.voltage, 1, '');
         
         const current = Math.abs(b.current || 0);
         const direction = b.current > 0 ? ' (Discharge)' : b.current < 0 ? ' (Charge)' : '';
         document.getElementById('bat-current').innerHTML = `${current.toFixed(1)}<span class="unit">A${direction}</span>`;
+        updateElement('summary-current', current, 1, '');
         
         updateElement('bat-temp', b.temperature, 1, '°C');
+        updateElement('bat-charge-power', b.chargePower, 0, 'W');
         document.getElementById('bat-charge-state').textContent = b.chargeStateText || '--';
 
         if (b.pv1) {
@@ -609,6 +917,14 @@
         }
 
         updateElement('pv-total', b.pvTotalPower, 0, 'W');
+        updateElement('summary-pv', b.pvTotalPower, 0, '');
+
+        if (b.bms) {
+          updateElement('bms-voltage', b.bms.voltage, 1, 'V');
+          updateElement('bms-current', b.bms.current, 1, 'A');
+          updateElement('bms-soc', b.bms.soc, 0, '%');
+          updateElement('bms-temp', b.bms.temperature, 1, '°C');
+        }
       }
 
       if (data.ac) {
@@ -616,14 +932,18 @@
         
         if (data.ac.grid?.l1) {
           updateElement('grid-l1-voltage', data.ac.grid.l1.voltage, 1, 'V');
+          updateElement('summary-grid-l1-v', data.ac.grid.l1.voltage, 1, '');
           updateElement('grid-l1-current', data.ac.grid.l1.current, 1, 'A');
           updateElement('grid-l1-power', data.ac.grid.l1.activePower, 0, 'W');
+          updateElement('summary-grid-l1-p', data.ac.grid.l1.activePower, 0, '');
         }
 
         if (data.ac.grid?.l2) {
           updateElement('grid-l2-voltage', data.ac.grid.l2.voltage, 1, 'V');
+          updateElement('summary-grid-l2-v', data.ac.grid.l2.voltage, 1, '');
           updateElement('grid-l2-current', data.ac.grid.l2.current, 1, 'A');
           updateElement('grid-l2-power', data.ac.grid.l2.activePower, 0, 'W');
+          updateElement('summary-grid-l2-p', data.ac.grid.l2.activePower, 0, '');
         }
 
         updateElement('inv-freq', data.ac.inverter?.frequency, 2, 'Hz');
@@ -641,17 +961,20 @@
         if (data.ac.load?.l1) {
           updateElement('load-l1-current', data.ac.load.l1.current, 1, 'A');
           updateElement('load-l1-power', data.ac.load.l1.activePower, 0, 'W');
+          updateElement('load-l1-apparent', data.ac.load.l1.apparentPower, 0, 'VA');
           updateElement('load-l1-ratio', data.ac.load.l1.ratio, 0, '%');
         }
 
         if (data.ac.load?.l2) {
           updateElement('load-l2-current', data.ac.load.l2.current, 1, 'A');
           updateElement('load-l2-power', data.ac.load.l2.activePower, 0, 'W');
+          updateElement('load-l2-apparent', data.ac.load.l2.apparentPower, 0, 'VA');
           updateElement('load-l2-ratio', data.ac.load.l2.ratio, 0, '%');
         }
 
         const totalLoad = (data.ac.load?.l1?.activePower || 0) + (data.ac.load?.l2?.activePower || 0);
         updateElement('load-total', totalLoad, 0, 'W');
+        updateElement('summary-load', totalLoad, 0, '');
 
         if (data.ac.temperatures) {
           updateElement('temp-dcdc', data.ac.temperatures.dcDc, 1, '°C');
@@ -662,21 +985,17 @@
       }
 
       if (data.energy?.today) {
-        updateElement('energy-pv-today', data.energy.today.pvGeneration, 1, 'kWh');
-        updateElement('energy-bat-chg-today', data.energy.today.batteryChargeKwh, 1, 'kWh');
-        updateElement('energy-bat-dchg-today', data.energy.today.batteryDischargeKwh, 1, 'kWh');
-        updateElement('energy-load-today', data.energy.today.loadConsumption, 1, 'kWh');
+        updateElement('solar-energy-today', data.energy.today.pvGeneration, 1, 'kWh');
+        updateElement('summary-energy-pv', data.energy.today.pvGeneration, 1, '');
+        updateElement('summary-energy-load', data.energy.today.loadConsumption, 1, '');
       }
 
       if (data.energy?.total) {
-        updateElement('energy-days', data.energy.total.workDays, 0, 'days');
-        updateElement('energy-pv-total', data.energy.total.pvGeneration, 1, 'kWh');
-        
-        const batTotal = (data.energy.total.batteryChargeKwh || 0) + (data.energy.total.batteryDischargeKwh || 0);
-        updateElement('energy-bat-total', batTotal, 1, 'kWh');
+        updateElement('solar-energy-total', data.energy.total.pvGeneration, 1, 'kWh');
+        updateElement('summary-runtime-days', data.energy.total.workDays, 0, '');
         
         const runtime = (data.energy.total.invWorkTime || 0) + (data.energy.total.lineWorkTime || 0);
-        updateElement('energy-runtime', runtime, 0, 'hrs');
+        updateElement('summary-runtime-total', runtime, 0, '');
       }
     }
 

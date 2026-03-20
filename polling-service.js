@@ -1,12 +1,12 @@
 import { REGISTER_GROUPS } from './registers.js';
 import { InverterDataParser } from './data-parser.js';
-import { TerminalFormatter } from './terminal-formatter.js';
 
 export class PollingService {
-  constructor(modbusClient, pollInterval, webServer = null) {
+  constructor(modbusClient, pollInterval, webServer = null, mqttPublisher = null) {
     this.modbusClient = modbusClient;
     this.pollInterval = pollInterval;
     this.webServer = webServer;
+    this.mqttPublisher = mqttPublisher;
     this.parser = new InverterDataParser(modbusClient);
     this.isRunning = false;
     this.pollTimer = null;
@@ -54,27 +54,24 @@ export class PollingService {
       const ac = this.parser.parseACData(acData);
       const energy = this.parser.parseEnergyData(energyData);
 
-      TerminalFormatter.displayData(
+      const payload = {
+        timestamp: new Date().toISOString(),
         systemStatus,
         battery,
         ac,
-        energy,
-        this.pollInterval
-      );
+        energy
+      };
 
       if (this.webServer) {
-        this.webServer.broadcastData({
-          timestamp: new Date().toISOString(),
-          systemStatus,
-          battery,
-          ac,
-          energy
-        });
+        this.webServer.broadcastData(payload);
+      }
+
+      if (this.mqttPublisher) {
+        this.mqttPublisher.publishInverterData(payload);
       }
 
     } catch (error) {
       console.error('Error during polling:', error.message);
-      TerminalFormatter.displayError(error);
       
       if (error.message.includes('Timed out') || error.message.includes('connection')) {
         console.log('Attempting to reconnect...');

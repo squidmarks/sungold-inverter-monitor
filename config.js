@@ -12,6 +12,7 @@ export function loadConfig() {
     SLAVE_ID: 1,
     MQTT_HOST: 'becoming-hub',
     MQTT_PORT: 1883,
+    MQTT_BASE_TOPIC: 'vessels/jefferson48/electrical/inverter',
     POLL_INTERVAL_MS: 5000,
     WEB_PORT: 3000
   };

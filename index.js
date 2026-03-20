@@ -4,6 +4,7 @@ import { loadConfig } from './config.js';
 import { InverterModbusClient } from './modbus-client.js';
 import { PollingService } from './polling-service.js';
 import { WebServer } from './web-server.js';
+import { MqttPublisher } from './mqtt-publisher.js';
 
 async function main() {
   const config = loadConfig();
@@ -16,11 +17,22 @@ async function main() {
   console.log(`  Slave ID:    ${config.SLAVE_ID}`);
   console.log(`  Poll Rate:   ${config.POLL_INTERVAL_MS}ms`);
   console.log(`  Web Port:    ${config.WEB_PORT}`);
-  console.log(`  MQTT:        ${config.MQTT_HOST}:${config.MQTT_PORT} (not connected yet)`);
+  console.log(`  MQTT:        ${config.MQTT_HOST}:${config.MQTT_PORT}`);
   console.log('\nInitializing...\n');
 
   const webServer = new WebServer(config.WEB_PORT);
   await webServer.start();
+
+  const mqttPublisher = new MqttPublisher(config.MQTT_HOST, config.MQTT_PORT, {
+    baseTopic: config.MQTT_BASE_TOPIC
+  });
+  
+  try {
+    await mqttPublisher.connect();
+  } catch (error) {
+    console.error('✗ Failed to connect to MQTT broker:', error.message);
+    console.log('  Continuing without MQTT publishing...\n');
+  }
 
   const modbusClient = new InverterModbusClient(
     config.INVERTER_HOST,
@@ -37,15 +49,17 @@ async function main() {
     console.error(`  - IP address ${config.INVERTER_HOST}:${config.INVERTER_PORT} is correct`);
     console.error('  - Network connectivity from this device to the bridge');
     webServer.stop();
+    await mqttPublisher.disconnect();
     process.exit(1);
   }
 
-  const pollingService = new PollingService(modbusClient, config.POLL_INTERVAL_MS, webServer);
+  const pollingService = new PollingService(modbusClient, config.POLL_INTERVAL_MS, webServer, mqttPublisher);
 
   process.on('SIGINT', async () => {
     console.log('\n\nShutting down...');
     pollingService.stop();
     webServer.stop();
+    await mqttPublisher.disconnect();
     await modbusClient.disconnect();
     process.exit(0);
   });
@@ -54,6 +68,7 @@ async function main() {
     console.log('\n\nShutting down...');
     pollingService.stop();
     webServer.stop();
+    await mqttPublisher.disconnect();
     await modbusClient.disconnect();
     process.exit(0);
   });
