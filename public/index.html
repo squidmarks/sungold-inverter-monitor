@@ -865,7 +865,7 @@
 
     setInterval(() => {
       const elapsed = Date.now() - lastUpdate;
-      if (elapsed > 15000) {
+      if (elapsed > 3000) {
         document.getElementById('status-dot').className = 'status-dot error';
       }
     }, 5000);
