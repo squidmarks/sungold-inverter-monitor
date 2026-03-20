@@ -56,6 +56,7 @@ export class PollingService {
 
       const payload = {
         timestamp: new Date().toISOString(),
+        inverterConnected: true,
         systemStatus,
         battery,
         ac,
@@ -72,6 +73,14 @@ export class PollingService {
 
     } catch (error) {
       console.error('Error during polling:', error.message);
+      
+      if (this.webServer) {
+        this.webServer.broadcastData({
+          timestamp: new Date().toISOString(),
+          inverterConnected: false,
+          error: error.message
+        });
+      }
       
       if (error.message.includes('Timed out') || error.message.includes('connection')) {
         console.log('Attempting to reconnect...');

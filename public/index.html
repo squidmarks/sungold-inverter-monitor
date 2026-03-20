@@ -138,6 +138,10 @@
       border-radius: 50%;
       animation: pulse 2s ease-in-out infinite;
     }
+    
+    .status-dot + .status-dot {
+      margin-left: 8px;
+    }
 
     .status-dot.connected {
       background: var(--green);
@@ -443,7 +447,8 @@
 <body>
   <div class="status-bar">
     <div class="status-indicator">
-      <div class="status-dot connected" id="status-dot"></div>
+      <div class="status-dot connected" id="status-dot" title="Web App"></div>
+      <div class="status-dot connected" id="inverter-dot" title="Inverter"></div>
     </div>
     <div class="status-indicator">
       <span id="state-badge" class="state-badge state-standby">STANDBY</span>
@@ -845,9 +850,17 @@
         if (data.status === 'connected') {
           return;
         }
-        updateDashboard(data);
-        lastUpdate = Date.now();
         
+        const inverterDot = document.getElementById('inverter-dot');
+        if (data.inverterConnected !== undefined) {
+          inverterDot.className = data.inverterConnected ? 'status-dot connected' : 'status-dot error';
+        }
+        
+        if (data.systemStatus || data.battery || data.ac) {
+          updateDashboard(data);
+        }
+        
+        lastUpdate = Date.now();
         document.getElementById('status-dot').className = 'status-dot connected';
       } catch (error) {
         console.error('Error parsing SSE data:', error);
@@ -861,6 +874,7 @@
     eventSource.onopen = () => {
       console.log('SSE connection established');
       document.getElementById('status-dot').className = 'status-dot connected';
+      document.getElementById('inverter-dot').className = 'status-dot connected';
     };
 
     setInterval(() => {
