@@ -878,10 +878,19 @@
       if (data.systemStatus) {
         const state = data.systemStatus.stateText || 'Unknown';
         const badge = document.getElementById('state-badge');
-        badge.textContent = state.toUpperCase().replace('OPERATION', '').replace('AC POWER', 'BYPASS').trim();
+        
+        let displayText = state.toUpperCase();
+        if (displayText.includes('AC POWER')) {
+          displayText = 'BYPASS';
+        } else if (displayText.includes('INVERTER OPERATION')) {
+          displayText = 'INVERTING';
+        } else if (displayText.includes('SWITCHING') || displayText.includes('ACTIVATING')) {
+          displayText = 'SWITCHING';
+        }
+        badge.textContent = displayText;
         
         badge.className = 'state-badge';
-        if (state.includes('Inverter')) badge.classList.add('state-inverting');
+        if (state.includes('Inverter Operation')) badge.classList.add('state-inverting');
         else if (state.includes('Bypass') || state.includes('AC Power')) badge.classList.add('state-bypass');
         else if (state.includes('Standby')) badge.classList.add('state-standby');
         else if (state.includes('Fault')) badge.classList.add('state-fault');
