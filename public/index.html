@@ -1024,16 +1024,16 @@
 
       if (data.energy?.today) {
         updateElement('solar-energy-today', data.energy.today.pvGeneration, 1, 'kWh');
-        updateElement('summary-energy-pv', data.energy.today.pvGeneration, 1, '');
-        updateElement('summary-energy-load', data.energy.today.loadConsumption, 1, '');
+        updateElement('summary-energy-pv', data.energy.today.pvGeneration, 1, 'kWh');
+        updateElement('summary-energy-load', data.energy.today.loadConsumption, 1, 'kWh');
       }
 
       if (data.energy?.total) {
         updateElement('solar-energy-total', data.energy.total.pvGeneration, 1, 'kWh');
-        updateElement('summary-runtime-days', data.energy.total.workDays, 0, '');
+        updateElement('summary-runtime-days', data.energy.total.workDays, 0, 'days');
         
         const runtime = (data.energy.total.invWorkTime || 0) + (data.energy.total.lineWorkTime || 0);
-        updateElement('summary-runtime-total', runtime, 0, '');
+        updateElement('summary-runtime-total', runtime, 0, 'hrs');
       }
     }
 
