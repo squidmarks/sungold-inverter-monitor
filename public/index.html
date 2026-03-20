@@ -158,6 +158,38 @@
       50% { opacity: 0.6; }
     }
 
+    .connection-lost-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .connection-lost-overlay.visible {
+      display: flex;
+    }
+
+    .connection-lost-text {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--red);
+      text-align: center;
+    }
+
+    .connection-lost-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
     .tabs {
       display: flex;
       overflow-x: auto;
@@ -445,6 +477,11 @@
   </style>
 </head>
 <body>
+  <div class="connection-lost-overlay" id="connection-lost-overlay">
+    <div class="connection-lost-text">⚠️ CONNECTION LOST</div>
+    <div class="connection-lost-subtitle">Cannot reach inverter - data may be stale</div>
+  </div>
+
   <div class="status-bar">
     <div class="status-indicator">
       <span style="font-size: 14px; margin-right: 4px;">💻</span>
@@ -864,6 +901,13 @@
         
         if (data.inverterConnected !== undefined) {
           inverterDot.className = data.inverterConnected ? 'status-dot connected' : 'status-dot error';
+          
+          const overlay = document.getElementById('connection-lost-overlay');
+          if (!data.inverterConnected) {
+            overlay.classList.add('visible');
+          } else {
+            overlay.classList.remove('visible');
+          }
         }
         
         if (data.mqttConnected !== undefined) {
