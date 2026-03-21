@@ -346,27 +346,57 @@
       to { opacity: 1; }
     }
 
-    .status-check-inline {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-right: 8px;
+    .alert-panel {
+      background: rgba(244, 67, 54, 0.15);
+      border: 2px solid var(--red);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      animation: slideDown 0.3s ease-out;
     }
 
-    .status-check-inline.connected {
-      color: var(--green);
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .status-check-inline.error {
+    .alert-icon {
+      font-size: 2rem;
       color: var(--red);
+      flex-shrink: 0;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .alert-message {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      line-height: 1.4;
     }
 
     .status-text {
       font-size: 0.95rem !important;
       font-weight: 500;
-    }
-
-    .metric-label .status-check-inline {
-      vertical-align: middle;
     }
 
     .card {
@@ -599,20 +629,22 @@
   </div>
 
   <div id="summary" class="tab-content active">
+    <div class="alert-panel" id="alert-panel" style="display: none;">
+      <div class="alert-icon">⚠</div>
+      <div class="alert-content">
+        <div class="alert-title">INVERTER ALERT</div>
+        <div class="alert-message" id="alert-message"></div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title">Current Status</div>
       <div class="metric-row">
-        <span class="metric-label">
-          <span id="inverter-check" class="status-check-inline connected">✓</span>
-          Inverter Connection
-        </span>
+        <span class="metric-label">Inverter Connection</span>
         <span class="metric-value status-text" id="inverter-status">Connected</span>
       </div>
       <div class="metric-row">
-        <span class="metric-label">
-          <span id="mqtt-check" class="status-check-inline connected">✓</span>
-          MQTT Connection
-        </span>
+        <span class="metric-label">MQTT Connection</span>
         <span class="metric-value status-text" id="mqtt-status">Connected</span>
       </div>
       <div class="metric-row">
@@ -970,14 +1002,10 @@
         activityIndicator.classList.add('active');
         
         // Update status indicators in Current Status panel
-        const inverterCheck = document.getElementById('inverter-check');
-        const mqttCheck = document.getElementById('mqtt-check');
         const inverterStatus = document.getElementById('inverter-status');
         const mqttStatus = document.getElementById('mqtt-status');
         
         if (data.inverterConnected !== undefined) {
-          inverterCheck.textContent = data.inverterConnected ? '✓' : '✗';
-          inverterCheck.className = data.inverterConnected ? 'status-check-inline connected' : 'status-check-inline error';
           inverterStatus.textContent = data.inverterConnected ? 'Connected' : 'Disconnected';
           inverterStatus.style.color = data.inverterConnected ? 'var(--green)' : 'var(--red)';
           
@@ -990,10 +1018,23 @@
         }
         
         if (data.mqttConnected !== undefined) {
-          mqttCheck.textContent = data.mqttConnected ? '✓' : '✗';
-          mqttCheck.className = data.mqttConnected ? 'status-check-inline connected' : 'status-check-inline error';
           mqttStatus.textContent = data.mqttConnected ? 'Connected' : 'Disconnected';
           mqttStatus.style.color = data.mqttConnected ? 'var(--green)' : 'var(--red)';
+        }
+        
+        // Update alert panel
+        if (data.systemStatus) {
+          const alertPanel = document.getElementById('alert-panel');
+          const alertMessage = document.getElementById('alert-message');
+          const hasFaults = data.systemStatus.faults && data.systemStatus.faults.length > 0;
+          
+          if (hasFaults) {
+            const faultMessages = data.systemStatus.faults.map(f => `${f.text} (Code ${f.code})`).join(' • ');
+            alertMessage.textContent = faultMessages;
+            alertPanel.style.display = 'flex';
+          } else {
+            alertPanel.style.display = 'none';
+          }
         }
         
         // Update footer with state and alerts
