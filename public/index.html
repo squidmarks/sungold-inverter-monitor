@@ -1004,7 +1004,8 @@
       setTimeout(() => {
         const canvas = document.getElementById('load-sparkline');
         if (canvas && loadHistory.length > 0) {
-          drawSparkline(canvas, loadHistory);
+          const rect = canvas.getBoundingClientRect();
+          drawSparkline(canvas, loadHistory, rect.width, rect.height);
         }
       }, 50);
     }
@@ -1028,23 +1029,21 @@
     const loadHistory = [];
     const MAX_HISTORY = 200;
 
-    function drawSparkline(canvas, data) {
+    function drawSparkline(canvas, data, width, height) {
       if (!canvas || data.length === 0) return;
       
       const ctx = canvas.getContext('2d');
-      const width = canvas.width;
-      const height = canvas.height;
       
       // Clear canvas
-      ctx.clearRect(0, 0, width, height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Find min/max for scaling
-      const values = data.filter(v => v !== null && !isNaN(v));
+      const values = data.filter(v => v !== null && !isNaN(v) && v >= 0);
       if (values.length === 0) return;
       
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      const range = max - min || 1;
+      const min = 0; // Always start from 0 for load
+      const max = Math.max(...values, 100); // Ensure at least 100W range
+      const range = max - min;
       
       // Draw line
       ctx.strokeStyle = getComputedStyle(document.documentElement)
@@ -1054,15 +1053,17 @@
       ctx.lineCap = 'round';
       
       ctx.beginPath();
+      let started = false;
       
       data.forEach((value, index) => {
-        if (value === null || isNaN(value)) return;
+        if (value === null || isNaN(value) || value < 0) return;
         
-        const x = (index / (data.length - 1)) * width;
+        const x = data.length > 1 ? (index / (data.length - 1)) * width : width / 2;
         const y = height - ((value - min) / range) * (height - 10) - 5;
         
-        if (index === 0) {
+        if (!started) {
           ctx.moveTo(x, y);
+          started = true;
         } else {
           ctx.lineTo(x, y);
         }
@@ -1071,17 +1072,19 @@
       ctx.stroke();
       
       // Draw subtle fill under line
-      ctx.lineTo(width, height);
-      ctx.lineTo(0, height);
-      ctx.closePath();
-      
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      const accentColor = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent').trim();
-      gradient.addColorStop(0, accentColor + '40');
-      gradient.addColorStop(1, accentColor + '00');
-      ctx.fillStyle = gradient;
-      ctx.fill();
+      if (started) {
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
+        ctx.closePath();
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        const accentColor = getComputedStyle(document.documentElement)
+          .getPropertyValue('--accent').trim();
+        gradient.addColorStop(0, accentColor + '40');
+        gradient.addColorStop(1, accentColor + '00');
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      }
     }
 
     function updateSparkline(loadValue) {
@@ -1101,7 +1104,8 @@
         const ctx = canvas.getContext('2d');
         ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         
-        drawSparkline(canvas, loadHistory);
+        // Pass actual display dimensions
+        drawSparkline(canvas, loadHistory, rect.width, rect.height);
       }
     }
 
