@@ -1781,36 +1781,41 @@
       statusDiv.textContent = 'Loading...';
       statusDiv.style.color = 'var(--text-muted)';
       
-      let successCount = 0;
-      let errorCount = 0;
-      
       const settings = CONFIG_REGISTERS[category];
       if (!settings) return;
       
-      for (const setting of settings) {
-        try {
-          const response = await fetch(`/api/settings/${setting.address.toString(16)}`);
-          const data = await response.json();
-          
-          if (data.value !== undefined) {
-            const displayValue = (data.value * setting.scale).toFixed(setting.scale < 1 ? 1 : 0);
-            document.getElementById(`setting-${setting.key}`).textContent = `${displayValue}${setting.unit}`;
-            document.getElementById(`input-${setting.key}`).value = displayValue;
-            successCount++;
-          }
-          
-          // 300ms delay between reads to avoid overwhelming inverter
-          await new Promise(resolve => setTimeout(resolve, 300));
-        } catch (error) {
-          console.error(`Failed to read ${setting.name}:`, error);
-          document.getElementById(`setting-${setting.key}`).textContent = 'Error';
-          errorCount++;
+      try {
+        // Use batch endpoint for much faster reads
+        const response = await fetch(`/api/settings/batch/${category.toLowerCase()}`);
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
         }
+        
+        let successCount = 0;
+        
+        // Update all settings from batch response
+        for (const setting of settings) {
+          const result = data.settings[setting.key];
+          if (result) {
+            document.getElementById(`setting-${setting.key}`).textContent = `${result.scaled}${setting.unit}`;
+            document.getElementById(`input-${setting.key}`).value = result.scaled;
+            successCount++;
+          } else {
+            document.getElementById(`setting-${setting.key}`).textContent = 'Error';
+          }
+        }
+        
+        statusDiv.textContent = `Loaded ${successCount} settings`;
+        statusDiv.style.color = 'var(--green)';
+        setTimeout(() => { statusDiv.textContent = ''; }, 5000);
+      } catch (error) {
+        console.error(`Failed to read ${category} settings:`, error);
+        statusDiv.textContent = `Error: ${error.message}`;
+        statusDiv.style.color = 'var(--red)';
+        setTimeout(() => { statusDiv.textContent = ''; }, 5000);
       }
-      
-      statusDiv.textContent = `Loaded ${successCount} settings${errorCount > 0 ? ` (${errorCount} errors)` : ''}`;
-      statusDiv.style.color = errorCount > 0 ? 'var(--orange)' : 'var(--green)';
-      setTimeout(() => { statusDiv.textContent = ''; }, 5000);
     }
 
     async function writeSetting(key, address, scale, category) {

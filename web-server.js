@@ -36,6 +36,75 @@ export class WebServer {
       });
     });
 
+    // Batch read settings for a category (much faster than individual reads)
+    this.app.get('/api/settings/batch/:category', async (req, res) => {
+      try {
+        const category = req.params.category.toUpperCase();
+        const { CONFIG_REGISTERS } = await import('./registers.js');
+        const settings = CONFIG_REGISTERS[category];
+        
+        if (!settings) {
+          return res.status(404).json({ error: 'Category not found' });
+        }
+        
+        if (!this.modbusClient || !this.modbusClient.connected) {
+          return res.status(503).json({ error: 'Modbus client not connected' });
+        }
+        
+        // Acquire lock once for entire batch
+        if (this.modbusLock) {
+          await this.modbusLock.acquire(10000);
+        }
+        
+        try {
+          const results = {};
+          
+          // Find min and max addresses to determine if we can do a single bulk read
+          const addresses = settings.map(s => s.address);
+          const minAddr = Math.min(...addresses);
+          const maxAddr = Math.max(...addresses);
+          const span = maxAddr - minAddr + 1;
+          
+          // If span is small (<=30 registers), do a single bulk read
+          if (span <= 30) {
+            const values = await this.modbusClient.readRegisters(minAddr, span);
+            
+            // Map values back to settings
+            for (const setting of settings) {
+              const offset = setting.address - minAddr;
+              results[setting.key] = {
+                value: values[offset],
+                scaled: (values[offset] * setting.scale).toFixed(setting.scale < 1 ? 1 : 0),
+                unit: setting.unit
+              };
+            }
+          } else {
+            // Address range is too large, read individually with short delays
+            for (const setting of settings) {
+              const values = await this.modbusClient.readRegisters(setting.address, 1);
+              results[setting.key] = {
+                value: values[0],
+                scaled: (values[0] * setting.scale).toFixed(setting.scale < 1 ? 1 : 0),
+                unit: setting.unit
+              };
+              await new Promise(resolve => setTimeout(resolve, 150));
+            }
+          }
+          
+          res.json({ category, settings: results });
+        } finally {
+          if (this.modbusLock) {
+            this.modbusLock.release();
+          }
+        }
+      } catch (error) {
+        if (this.modbusLock) {
+          this.modbusLock.release();
+        }
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // Read inverter configuration register
     this.app.get('/api/settings/:address', async (req, res) => {
       try {
