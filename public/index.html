@@ -346,54 +346,27 @@
       to { opacity: 1; }
     }
 
-    .status-panel {
-      text-align: center;
-      padding: 20px 15px;
-      background: rgba(30, 136, 229, 0.1);
-      border-radius: 10px;
-      margin-bottom: 15px;
-      border: 1px solid var(--card-border);
-      transition: background 0.3s, border 0.3s;
-    }
-
-    .status-panel-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 15px;
-    }
-
-    .status-items {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 40px;
-    }
-
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .status-check {
-      font-size: 1.4rem;
+    .status-check-inline {
+      font-size: 1.1rem;
       font-weight: bold;
+      margin-right: 8px;
     }
 
-    .status-check.connected {
+    .status-check-inline.connected {
       color: var(--green);
     }
 
-    .status-check.error {
+    .status-check-inline.error {
       color: var(--red);
     }
 
-    .status-label {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
+    .status-text {
+      font-size: 0.95rem !important;
       font-weight: 500;
+    }
+
+    .metric-label .status-check-inline {
+      vertical-align: middle;
     }
 
     .card {
@@ -586,18 +559,6 @@
       .card {
         padding: 15px;
       }
-
-      .status-items {
-        gap: 25px;
-      }
-
-      .status-check {
-        font-size: 1.2rem;
-      }
-
-      .status-label {
-        font-size: 0.85rem;
-      }
     }
   </style>
 </head>
@@ -638,33 +599,34 @@
   </div>
 
   <div id="summary" class="tab-content active">
-    <div class="status-panel">
-      <div class="status-panel-label">Connectivity Status</div>
-      <div class="status-items">
-        <div class="status-item">
-          <span class="status-check connected" id="inverter-check">✓</span>
-          <span class="status-label">Inverter</span>
-        </div>
-        <div class="status-item">
-          <span class="status-check connected" id="mqtt-check">✓</span>
-          <span class="status-label">MQTT</span>
-        </div>
+    <div class="card">
+      <div class="card-title">Current Status</div>
+      <div class="metric-row">
+        <span class="metric-label">
+          <span id="inverter-check" class="status-check-inline connected">✓</span>
+          Inverter Connection
+        </span>
+        <span class="metric-value status-text" id="inverter-status">Connected</span>
       </div>
-    </div>
-
-    <div class="hero-metric">
-      <div class="hero-label">Total Load</div>
-      <div class="hero-value" id="summary-load">--<span class="hero-unit">W</span></div>
-    </div>
-
-    <div class="hero-metric">
-      <div class="hero-label">Battery State of Charge</div>
-      <div class="hero-value" id="summary-soc">--<span class="hero-unit">%</span></div>
-    </div>
-
-    <div class="hero-metric">
-      <div class="hero-label">Solar Power</div>
-      <div class="hero-value" id="summary-pv">--<span class="hero-unit">W</span></div>
+      <div class="metric-row">
+        <span class="metric-label">
+          <span id="mqtt-check" class="status-check-inline connected">✓</span>
+          MQTT Connection
+        </span>
+        <span class="metric-value status-text" id="mqtt-status">Connected</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Total Load</span>
+        <span class="metric-value" id="summary-load">--<span class="unit">W</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Battery SoC</span>
+        <span class="metric-value" id="summary-soc">--<span class="unit">%</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Solar Power</span>
+        <span class="metric-value" id="summary-pv">--<span class="unit">W</span></span>
+      </div>
     </div>
 
     <div class="card">
@@ -1007,13 +969,17 @@
         void activityIndicator.offsetWidth; // Force reflow
         activityIndicator.classList.add('active');
         
-        // Update top status panel checkboxes
+        // Update status indicators in Current Status panel
         const inverterCheck = document.getElementById('inverter-check');
         const mqttCheck = document.getElementById('mqtt-check');
+        const inverterStatus = document.getElementById('inverter-status');
+        const mqttStatus = document.getElementById('mqtt-status');
         
         if (data.inverterConnected !== undefined) {
           inverterCheck.textContent = data.inverterConnected ? '✓' : '✗';
-          inverterCheck.className = data.inverterConnected ? 'status-check connected' : 'status-check error';
+          inverterCheck.className = data.inverterConnected ? 'status-check-inline connected' : 'status-check-inline error';
+          inverterStatus.textContent = data.inverterConnected ? 'Connected' : 'Disconnected';
+          inverterStatus.style.color = data.inverterConnected ? 'var(--green)' : 'var(--red)';
           
           const overlay = document.getElementById('connection-lost-overlay');
           if (!data.inverterConnected) {
@@ -1025,7 +991,9 @@
         
         if (data.mqttConnected !== undefined) {
           mqttCheck.textContent = data.mqttConnected ? '✓' : '✗';
-          mqttCheck.className = data.mqttConnected ? 'status-check connected' : 'status-check error';
+          mqttCheck.className = data.mqttConnected ? 'status-check-inline connected' : 'status-check-inline error';
+          mqttStatus.textContent = data.mqttConnected ? 'Connected' : 'Disconnected';
+          mqttStatus.style.color = data.mqttConnected ? 'var(--green)' : 'var(--red)';
         }
         
         // Update footer with state and alerts
