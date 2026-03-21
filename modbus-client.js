@@ -180,6 +180,83 @@ export class InverterModbusClient {
     });
   }
 
+  async writeSingleRegister(address, value) {
+    if (!this.connected || !this.socket) {
+      throw new Error('Not connected to inverter');
+    }
+
+    return new Promise((resolve, reject) => {
+      const transId = this.transactionId++;
+      
+      // Modbus TCP frame for function code 06 (Write Single Register)
+      const request = Buffer.alloc(12);
+      request.writeUInt16BE(transId, 0);      // Transaction ID
+      request.writeUInt16BE(0, 2);            // Protocol ID
+      request.writeUInt16BE(6, 4);            // Length
+      request.writeUInt8(this.slaveId, 6);    // Slave ID
+      request.writeUInt8(0x06, 7);            // Function code 06
+      request.writeUInt16BE(address, 8);      // Register address
+      request.writeUInt16BE(value, 10);       // Register value
+
+      let responseBuffer = Buffer.alloc(0);
+      
+      const timeout = setTimeout(() => {
+        this.socket.removeListener('data', dataHandler);
+        console.error(`Modbus write timed out at address 0x${address.toString(16)}`);
+        this.connected = false;
+        reject(new Error('Timed out waiting for write response'));
+      }, 5000);
+
+      const dataHandler = (data) => {
+        responseBuffer = Buffer.concat([responseBuffer, data]);
+        
+        // Response should be 12 bytes for function code 06
+        if (responseBuffer.length >= 12) {
+          clearTimeout(timeout);
+          this.socket.removeListener('data', dataHandler);
+          
+          try {
+            const responseSlaveId = responseBuffer[6];
+            const responseFunctionCode = responseBuffer[7];
+            
+            // Check for exception response (function code + 0x80)
+            if (responseFunctionCode === 0x86) {
+              const exceptionCode = responseBuffer[8];
+              reject(new Error(`Modbus exception ${exceptionCode} writing to address 0x${address.toString(16)}`));
+              return;
+            }
+            
+            if (responseSlaveId !== this.slaveId || responseFunctionCode !== 0x06) {
+              reject(new Error(`Invalid response: expected slave ${this.slaveId} fc 06, got slave ${responseSlaveId} fc ${responseFunctionCode}`));
+              return;
+            }
+            
+            const responseAddress = responseBuffer.readUInt16BE(8);
+            const responseValue = responseBuffer.readUInt16BE(10);
+            
+            if (responseAddress !== address || responseValue !== value) {
+              reject(new Error(`Write verification failed: expected ${address}=${value}, got ${responseAddress}=${responseValue}`));
+              return;
+            }
+            
+            resolve({ address, value });
+          } catch (error) {
+            reject(new Error(`Parse error: ${error.message}`));
+          }
+        }
+      };
+
+      this.socket.on('data', dataHandler);
+
+      this.socket.write(request, (err) => {
+        if (err) {
+          clearTimeout(timeout);
+          reject(err);
+        }
+      });
+    });
+  }
+
   async readRegisterGroups(groups, delayMs = 100) {
     const results = {};
     

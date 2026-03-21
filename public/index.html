@@ -583,6 +583,121 @@
       50% { opacity: 0.5; }
     }
 
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    .settings-status {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .settings-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+    }
+
+    .setting-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .setting-name {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .setting-description {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .setting-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-value {
+      min-width: 80px;
+      text-align: right;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .setting-input {
+      width: 100px;
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+
+    body.light-mode .setting-input {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .setting-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn-primary, .btn-set {
+      padding: 8px 16px;
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-set {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    .btn-primary:hover, .btn-set:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active, .btn-set:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled, .btn-set:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     @media (max-width: 768px) {
       body {
         padding-bottom: 50px;
@@ -651,6 +766,7 @@
     <button class="tab" onclick="showTab('battery')">Battery</button>
     <button class="tab" onclick="showTab('solar')">Solar</button>
     <button class="tab" onclick="showTab('power')">AC Power</button>
+    <button class="tab" onclick="showTab('settings')">Settings</button>
   </div>
 
   <div id="summary" class="tab-content active">
@@ -965,6 +1081,33 @@
         <span class="metric-label">Ambient</span>
         <span class="metric-value" id="temp-ambient">--<span class="unit">°C</span></span>
       </div>
+    </div>
+  </div>
+
+  <div id="settings" class="tab-content">
+    <div class="settings-header">
+      <button class="btn-primary" onclick="refreshSettings()">Refresh All Settings</button>
+      <div id="settings-status" class="settings-status"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Battery Settings</div>
+      <div id="battery-settings" class="settings-group"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Solar Settings</div>
+      <div id="solar-settings" class="settings-group"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Timed Charge/Discharge</div>
+      <div id="timing-settings" class="settings-group"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Grid Connection</div>
+      <div id="grid-settings" class="settings-group"></div>
     </div>
   </div>
 
@@ -1414,6 +1557,143 @@
         }
       })
       .catch(console.error);
+
+    // Configuration registers definition
+    const CONFIG_REGISTERS = {
+      BATTERY: [
+        { address: 0xE003, name: 'Battery Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System battery voltage (12V/24V/36V/48V)' },
+        { address: 0xE004, name: 'Battery Type', key: 'batType', scale: 1, unit: '', min: 0, max: 14, description: '0:User 1:SLD 2:FLD 3:GEL 4-6:LiFePO4' },
+        { address: 0xE006, name: 'Charge Limit Voltage', key: 'chgLimitVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Over-charge protection voltage (12V basis)' },
+        { address: 0xE007, name: 'Equalize Charge Voltage', key: 'equalizVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Equalization voltage (12V basis)' },
+        { address: 0xE009, name: 'Float Charge Voltage', key: 'floatVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Float charge voltage (12V basis)' },
+        { address: 0xE00D, name: 'Over-discharge Voltage', key: 'overDischgVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Battery cutoff voltage with load (12V basis)' },
+        { address: 0xE00F, name: 'Discharge Cutoff SoC', key: 'stopSoc', scale: 1, unit: '%', min: 0, max: 100, description: 'Minimum SoC before load cutoff' },
+        { address: 0xE021, name: 'Max Discharge Current', key: 'maxDischgCurr', scale: 1, unit: 'A', min: 0, max: 200, description: 'Maximum battery discharge current' },
+      ],
+      SOLAR: [
+        { address: 0xE039, name: 'PV Power Priority', key: 'pvPriority', scale: 1, unit: '', min: 0, max: 2, description: '0:Charge priority 1:Load priority' },
+      ],
+      TIMING: [
+        { address: 0xE026, name: 'Charge Start Time 1', key: 'chgStart1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
+        { address: 0xE027, name: 'Charge End Time 1', key: 'chgEnd1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
+        { address: 0xE02C, name: 'Timed Charge Enable', key: 'timedChgEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+        { address: 0xE02D, name: 'Discharge Start Time 1', key: 'dischgStart1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
+        { address: 0xE02E, name: 'Discharge End Time 1', key: 'dischgEnd1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
+        { address: 0xE033, name: 'Timed Discharge Enable', key: 'timedDischgEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+      ],
+      GRID: [
+        { address: 0xE037, name: 'Grid Mode', key: 'gridMode', scale: 1, unit: '', min: 0, max: 3, description: '0:Off-grid 1:Grid-tied 2:ACout anti-backfeed 3:ACin anti-backfeed' },
+        { address: 0xE038, name: 'Leakage Detection', key: 'leakageDetect', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+      ]
+    };
+
+    function createSettingRow(setting) {
+      const row = document.createElement('div');
+      row.className = 'setting-row';
+      row.innerHTML = `
+        <div class="setting-info">
+          <div class="setting-name">${setting.name}</div>
+          <div class="setting-description">${setting.description}</div>
+        </div>
+        <div class="setting-controls">
+          <div class="setting-value" id="setting-${setting.key}">--${setting.unit}</div>
+          <input type="number" class="setting-input" id="input-${setting.key}" 
+                 min="${setting.min}" max="${setting.max}" step="${setting.scale}">
+          <button class="btn-set" onclick="writeSetting('${setting.key}', ${setting.address}, ${setting.scale})">Set</button>
+        </div>
+      `;
+      return row;
+    }
+
+    function populateSettings() {
+      Object.keys(CONFIG_REGISTERS).forEach(category => {
+        const containerId = category.toLowerCase() + '-settings';
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        CONFIG_REGISTERS[category].forEach(setting => {
+          container.appendChild(createSettingRow(setting));
+        });
+      });
+    }
+
+    async function refreshSettings() {
+      const statusDiv = document.getElementById('settings-status');
+      statusDiv.textContent = 'Loading...';
+      statusDiv.style.color = 'var(--text-muted)';
+      
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const category of Object.keys(CONFIG_REGISTERS)) {
+        for (const setting of CONFIG_REGISTERS[category]) {
+          try {
+            const response = await fetch(`/api/settings/${setting.address.toString(16)}`);
+            const data = await response.json();
+            
+            if (data.value !== undefined) {
+              const displayValue = (data.value * setting.scale).toFixed(setting.scale < 1 ? 1 : 0);
+              document.getElementById(`setting-${setting.key}`).textContent = `${displayValue}${setting.unit}`;
+              document.getElementById(`input-${setting.key}`).value = displayValue;
+              successCount++;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (error) {
+            console.error(`Failed to read ${setting.name}:`, error);
+            errorCount++;
+          }
+        }
+      }
+      
+      statusDiv.textContent = `Loaded ${successCount} settings${errorCount > 0 ? ` (${errorCount} errors)` : ''}`;
+      statusDiv.style.color = errorCount > 0 ? 'var(--orange)' : 'var(--green)';
+    }
+
+    async function writeSetting(key, address, scale) {
+      const inputEl = document.getElementById(`input-${key}`);
+      const valueEl = document.getElementById(`setting-${key}`);
+      const statusDiv = document.getElementById('settings-status');
+      
+      const inputValue = parseFloat(inputEl.value);
+      if (isNaN(inputValue)) {
+        statusDiv.textContent = 'Invalid value';
+        statusDiv.style.color = 'var(--red)';
+        return;
+      }
+      
+      // Convert to register value (reverse scaling)
+      const registerValue = Math.round(inputValue / scale);
+      
+      try {
+        statusDiv.textContent = 'Writing...';
+        statusDiv.style.color = 'var(--text-muted)';
+        
+        const response = await fetch(`/api/settings/${address.toString(16)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: registerValue })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          valueEl.textContent = inputValue.toFixed(scale < 1 ? 1 : 0) + valueEl.textContent.match(/[A-Z%°]/g)?.join('') || '';
+          statusDiv.textContent = 'Setting updated successfully';
+          statusDiv.style.color = 'var(--green)';
+          setTimeout(() => { statusDiv.textContent = ''; }, 3000);
+        } else {
+          throw new Error(result.error || 'Write failed');
+        }
+      } catch (error) {
+        statusDiv.textContent = `Error: ${error.message}`;
+        statusDiv.style.color = 'var(--red)';
+      }
+    }
+
+    // Initialize settings UI
+    populateSettings();
   </script>
 </body>
 </html>

@@ -224,3 +224,35 @@ export const REGISTER_GROUPS = {
     { name: 'ENERGY_KWH_TOTAL', address: 0xF04F, count: 4 },
   ]
 };
+
+// Configuration registers (R/W) grouped by category
+export const CONFIG_REGISTERS = {
+  BATTERY: [
+    { address: 0xE003, name: 'Battery Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System battery voltage (12V/24V/36V/48V)' },
+    { address: 0xE004, name: 'Battery Type', key: 'batType', scale: 1, unit: '', min: 0, max: 14, description: '0:User 1:SLD 2:FLD 3:GEL 4-6:LiFePO4 7-9:LiFePO4 10-12:Ternary Li' },
+    { address: 0xE006, name: 'Charge Limit Voltage', key: 'chgLimitVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Over-charge protection voltage (12V basis)' },
+    { address: 0xE007, name: 'Equalize Charge Voltage', key: 'equalizVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Equalization voltage (12V basis)' },
+    { address: 0xE009, name: 'Float Charge Voltage', key: 'floatVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Float charge voltage (12V basis)' },
+    { address: 0xE00D, name: 'Over-discharge Voltage', key: 'overDischgVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Battery cutoff voltage with load (12V basis)' },
+    { address: 0xE00F, name: 'Discharge Cutoff SoC', key: 'stopSoc', scale: 1, unit: '%', min: 0, max: 100, description: 'Minimum SoC before load cutoff' },
+    { address: 0xE021, name: 'Max Discharge Current', key: 'maxDischgCurr', scale: 1, unit: 'A', min: 0, max: 200, description: 'Maximum battery discharge current' },
+  ],
+  
+  SOLAR: [
+    { address: 0xE039, name: 'PV Power Priority', key: 'pvPriority', scale: 1, unit: '', min: 0, max: 2, description: '0:Charge priority 1:Load priority' },
+  ],
+  
+  TIMING: [
+    { address: 0xE026, name: 'Charge Start Time 1', key: 'chgStart1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Charging period 1 start (HH*256+MM)' },
+    { address: 0xE027, name: 'Charge End Time 1', key: 'chgEnd1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Charging period 1 end (HH*256+MM)' },
+    { address: 0xE02C, name: 'Timed Charge Enable', key: 'timedChgEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+    { address: 0xE02D, name: 'Discharge Start Time 1', key: 'dischgStart1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Discharge period 1 start (HH*256+MM)' },
+    { address: 0xE02E, name: 'Discharge End Time 1', key: 'dischgEnd1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Discharge period 1 end (HH*256+MM)' },
+    { address: 0xE033, name: 'Timed Discharge Enable', key: 'timedDischgEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+  ],
+  
+  GRID: [
+    { address: 0xE037, name: 'Grid Mode', key: 'gridMode', scale: 1, unit: '', min: 0, max: 3, description: '0:Off-grid 1:Grid-tied 2:ACout anti-backfeed 3:ACin anti-backfeed' },
+    { address: 0xE038, name: 'Leakage Detection', key: 'leakageDetect', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+  ]
+};
