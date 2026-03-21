@@ -463,6 +463,31 @@
       border-bottom: none;
     }
 
+    .metric-row-with-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sparkline-canvas {
+      width: 100%;
+      height: 50px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    body.light-mode .sparkline-canvas {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
     .metric-label {
       color: var(--text-secondary);
       font-size: 0.95rem;
@@ -647,9 +672,12 @@
         <span class="metric-label">MQTT Connection</span>
         <span class="metric-value status-text" id="mqtt-status">Connected</span>
       </div>
-      <div class="metric-row">
-        <span class="metric-label">Total Load</span>
-        <span class="metric-value" id="summary-load">--<span class="unit">W</span></span>
+      <div class="metric-row-with-chart">
+        <div class="metric-row-top">
+          <span class="metric-label">Total Load</span>
+          <span class="metric-value" id="summary-load">--<span class="unit">W</span></span>
+        </div>
+        <canvas id="load-sparkline" class="sparkline-canvas"></canvas>
       </div>
       <div class="metric-row">
         <span class="metric-label">Battery SoC</span>
@@ -967,6 +995,14 @@
         ? '<circle cx="12" cy="12" r="5" fill="none"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
         : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
       localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      
+      // Redraw sparkline with new theme colors
+      setTimeout(() => {
+        const canvas = document.getElementById('load-sparkline');
+        if (canvas && loadHistory.length > 0) {
+          drawSparkline(canvas, loadHistory);
+        }
+      }, 50);
     }
 
     window.addEventListener('load', () => {
@@ -983,6 +1019,87 @@
         icon.innerHTML = '<circle cx="12" cy="12" r="5" fill="none"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
       }
     });
+
+    // Sparkline data buffer - keep last 200 points (10 minutes at 3s interval)
+    const loadHistory = [];
+    const MAX_HISTORY = 200;
+
+    function drawSparkline(canvas, data) {
+      if (!canvas || data.length === 0) return;
+      
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+      
+      // Find min/max for scaling
+      const values = data.filter(v => v !== null && !isNaN(v));
+      if (values.length === 0) return;
+      
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const range = max - min || 1;
+      
+      // Draw line
+      ctx.strokeStyle = getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent').trim();
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      
+      ctx.beginPath();
+      
+      data.forEach((value, index) => {
+        if (value === null || isNaN(value)) return;
+        
+        const x = (index / (data.length - 1)) * width;
+        const y = height - ((value - min) / range) * (height - 10) - 5;
+        
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      
+      ctx.stroke();
+      
+      // Draw subtle fill under line
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.closePath();
+      
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      const accentColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent').trim();
+      gradient.addColorStop(0, accentColor + '40');
+      gradient.addColorStop(1, accentColor + '00');
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+
+    function updateSparkline(loadValue) {
+      loadHistory.push(loadValue);
+      
+      // Keep only last MAX_HISTORY points
+      if (loadHistory.length > MAX_HISTORY) {
+        loadHistory.shift();
+      }
+      
+      const canvas = document.getElementById('load-sparkline');
+      if (canvas) {
+        // Set canvas resolution
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        
+        drawSparkline(canvas, loadHistory);
+      }
+    }
 
     const eventSource = new EventSource('/events');
     let lastUpdate = Date.now();
@@ -1177,6 +1294,7 @@
         const totalLoad = (data.ac.load?.l1?.activePower || 0) + (data.ac.load?.l2?.activePower || 0);
         updateElement('load-total', totalLoad, 0, 'W');
         updateElement('summary-load', totalLoad, 0, 'W');
+        updateSparkline(totalLoad);
 
         if (data.ac.temperatures) {
           updateElement('temp-dcdc', data.ac.temperatures.dcDc, 1, '°C');
