@@ -261,8 +261,8 @@ export const CONFIG_REGISTERS = {
   
   CHARGING: [
     { id: '—', address: 0xE001, name: 'PV Charge Current', key: 'pvChgCurr', scale: 0.1, unit: 'A', min: 0, max: 150, description: 'Max current from solar' },
-    { id: '07/28', address: 0xE205, name: 'AC/Grid Charge Current', key: 'acChgLimit', scale: 0.1, unit: 'A', min: 0, max: 200, description: 'Max current from AC/grid' },
-    { id: '—', address: 0xE20A, name: 'Max Total Charge Current', key: 'maxChgCurr', scale: 0.1, unit: 'A', min: 0, max: 200, description: 'Combined PV+AC limit' },
+    { id: '07', address: 0xE20A, name: 'Battery Charge Current', key: 'maxChgCurr', scale: 0.1, unit: 'A', min: 0, max: 140, description: 'Total max battery charge current' },
+    { id: '28', address: 0xE205, name: 'Grid Charge Current', key: 'acChgLimit', scale: 0.1, unit: 'A', min: 0, max: 80, description: 'Max current from AC/grid' },
     { id: '06', address: 0xE20F, name: 'Battery Charge Mode', key: 'chgSourcePriority', scale: 1, unit: '', min: 0, max: 3, description: '0:PV 1:AC 2:Hybrid 3:PV only' },
     { id: '39', address: 0xE025, name: 'Charge Limit (BMS Mode)', key: 'bmsChgMode', scale: 1, unit: '', min: 0, max: 2, description: '0:Set 1:BMS 2:Inverter' },
     { id: '09', address: 0xE006, name: 'Boost Charge Voltage', key: 'chgCutoffVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Boost voltage (12V basis)' },
