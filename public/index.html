@@ -697,6 +697,12 @@
       font-size: 0.9rem;
     }
 
+    select.setting-input {
+      width: auto;
+      min-width: 180px;
+      cursor: pointer;
+    }
+
     body.light-mode .setting-input {
       background: rgba(255, 255, 255, 0.8);
     }
@@ -1735,25 +1741,129 @@
     // Configuration registers definition (must match backend registers.js)
     const CONFIG_REGISTERS = {
       BASIC: [
-        { id: '01', address: 0xE204, name: 'AC Output Mode', key: 'outputPriority', scale: 1, unit: '', min: 0, max: 2, description: '0:UTI 1:SBU 2:SBU' },
-        { id: '38', address: 0xE208, name: 'AC Output Voltage', key: 'outputVolt', scale: 0.1, unit: 'V', min: 100, max: 264, description: '100/105/110/120/127 VAC' },
-        { id: '02', address: 0xE209, name: 'AC Input Frequency', key: 'outputFreq', scale: 0.01, unit: 'Hz', min: 45, max: 65, description: '50Hz or 60Hz' },
-        { id: '03', address: 0xE20B, name: 'AC Input Voltage Range', key: 'acVoltRange', scale: 1, unit: '', min: 0, max: 1, description: '0:APL (Wide) 1:UPS (Narrow)' },
-        { id: '22', address: 0xE20C, name: 'Energy-Saving Mode', key: 'powerSaving', scale: 1, unit: '', min: 0, max: 1, description: 'Off below 50W after 5min' },
-        { id: '25', address: 0xE210, name: 'Buzzer Alarm', key: 'alarmEn', scale: 1, unit: '', min: 0, max: 1, description: 'Audible alerts' },
-        { id: '26', address: 0xE211, name: 'Mode Switch Prompt', key: 'alarmSrcLoss', scale: 1, unit: '', min: 0, max: 1, description: 'Beep on source change' },
-        { id: '27', address: 0xE212, name: 'Bypass on Overload', key: 'bypOnOL', scale: 1, unit: '', min: 0, max: 1, description: 'Auto-switch to bypass' },
-        { id: '23', address: 0xE20D, name: 'Overload Auto Restart', key: 'autoRestartOL', scale: 1, unit: '', min: 0, max: 1, description: 'Auto-recover after 3min' },
-        { id: '24', address: 0xE20E, name: 'Over-temp Auto Restart', key: 'autoRestartOT', scale: 1, unit: '', min: 0, max: 1, description: 'Auto-recover from over-temp' },
-        { id: '—', address: 0xE213, name: 'Record Fault History', key: 'recordFaults', scale: 1, unit: '', min: 0, max: 1, description: 'Log fault events' },
+        { id: '01', address: 0xE204, name: 'AC Output Mode', key: 'outputPriority', scale: 1, unit: '', min: 0, max: 3, description: 'Output priority mode',
+          options: [
+            { value: 0, label: 'UTI (Utility First)' },
+            { value: 1, label: 'SBU (Solar-Battery-Utility)' },
+            { value: 2, label: 'SOL (Solar First)' },
+            { value: 3, label: 'SUB (Solar-Utility-Battery)' }
+          ]
+        },
+        { id: '38', address: 0xE208, name: 'AC Output Voltage', key: 'outputVolt', scale: 0.1, unit: 'V', min: 100, max: 127, description: 'AC output voltage',
+          options: [
+            { value: 100, label: '100 VAC' },
+            { value: 105, label: '105 VAC' },
+            { value: 110, label: '110 VAC' },
+            { value: 120, label: '120 VAC' },
+            { value: 127, label: '127 VAC' }
+          ]
+        },
+        { id: '02', address: 0xE209, name: 'AC Input Frequency', key: 'outputFreq', scale: 0.01, unit: 'Hz', min: 50, max: 60, description: '50Hz or 60Hz',
+          options: [
+            { value: 50, label: '50.0 Hz' },
+            { value: 60, label: '60.0 Hz' }
+          ]
+        },
+        { id: '03', address: 0xE20B, name: 'AC Input Voltage Range', key: 'acVoltRange', scale: 1, unit: '', min: 0, max: 1, description: 'Input voltage range',
+          options: [
+            { value: 0, label: 'APL (Wide: 85-140V)' },
+            { value: 1, label: 'UPS (Narrow: 90-140V)' }
+          ]
+        },
+        { id: '22', address: 0xE20C, name: 'Energy-Saving Mode', key: 'powerSaving', scale: 1, unit: '', min: 0, max: 1, description: 'Auto-off below 50W',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
+        { id: '25', address: 0xE210, name: 'Buzzer Alarm', key: 'alarmEn', scale: 1, unit: '', min: 0, max: 1, description: 'Audible alerts',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
+        { id: '26', address: 0xE211, name: 'Mode Switch Prompt', key: 'alarmSrcLoss', scale: 1, unit: '', min: 0, max: 1, description: 'Beep on source change',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
+        { id: '27', address: 0xE212, name: 'Bypass on Overload', key: 'bypOnOL', scale: 1, unit: '', min: 0, max: 1, description: 'Auto-switch to bypass',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
+        { id: '23', address: 0xE20D, name: 'Overload Auto Restart', key: 'autoRestartOL', scale: 1, unit: '', min: 0, max: 1, description: 'Auto-recover after 3min',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
+        { id: '24', address: 0xE20E, name: 'Over-temp Auto Restart', key: 'autoRestartOT', scale: 1, unit: '', min: 0, max: 1, description: 'Auto-recover from over-temp',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
+        { id: '—', address: 0xE213, name: 'Record Fault History', key: 'recordFaults', scale: 1, unit: '', min: 0, max: 1, description: 'Log fault events',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
       ],
       BATTERY: [
         { id: '—', address: 0xE002, name: 'Battery Capacity', key: 'batCap', scale: 1, unit: 'Ah', min: 0, max: 400, description: 'From BMS' },
-        { id: '—', address: 0xE003, name: 'System Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: '12/24/36/48V' },
-        { id: '08', address: 0xE004, name: 'Battery Type', key: 'batType', scale: 1, unit: '', min: 0, max: 14, description: '0:User 1:SLD 2:FLD 3:GEL 4-6:LiFePO4' },
-        { id: '32', address: 0xE215, name: 'BMS Communication', key: 'bmsComm', scale: 1, unit: '', min: 0, max: 2, description: '0:Off 1:RS485 2:CAN' },
-        { id: '33', address: 0xE21B, name: 'BMS Protocol', key: 'bmsProtocol', scale: 1, unit: '', min: 0, max: 30, description: 'Select protocol (0-30)' },
-        { id: '—', address: 0xE214, name: 'Stop on BMS Error', key: 'bmsErrStop', scale: 1, unit: '', min: 0, max: 1, description: 'Halt on BMS fault' },
+        { id: '—', address: 0xE003, name: 'System Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System voltage',
+          options: [
+            { value: 12, label: '12V' },
+            { value: 24, label: '24V' },
+            { value: 36, label: '36V' },
+            { value: 48, label: '48V' }
+          ]
+        },
+        { id: '08', address: 0xE004, name: 'Battery Type', key: 'batType', scale: 1, unit: '', min: 0, max: 14, description: 'Battery chemistry',
+          options: [
+            { value: 0, label: 'USER (User-defined)' },
+            { value: 1, label: 'SLD (Sealed Lead-Acid)' },
+            { value: 2, label: 'FLD (Flooded Lead-Acid)' },
+            { value: 3, label: 'GEL (Gel Lead-Acid)' },
+            { value: 4, label: 'L14 (LFP 14S)' },
+            { value: 5, label: 'L15 (LFP 15S)' },
+            { value: 6, label: 'L16 (LFP 16S)' },
+            { value: 13, label: 'N13 (Ternary 13S)' },
+            { value: 14, label: 'N14 (Ternary 14S)' },
+            { value: 15, label: 'NOb (No Battery)' }
+          ]
+        },
+        { id: '32', address: 0xE215, name: 'BMS Communication', key: 'bmsComm', scale: 1, unit: '', min: 0, max: 2, description: 'BMS protocol type',
+          options: [
+            { value: 0, label: 'DIS (Disabled)' },
+            { value: 1, label: '485 (RS485-BMS)' },
+            { value: 2, label: 'CAN (CAN-BMS)' }
+          ]
+        },
+        { id: '33', address: 0xE21B, name: 'BMS Protocol', key: 'bmsProtocol', scale: 1, unit: '', min: 0, max: 30, description: 'Manufacturer protocol',
+          options: [
+            { value: 0, label: 'SGP (SUNGOLDPOWER)' },
+            { value: 1, label: 'PAC (PACE)' },
+            { value: 2, label: 'RDA (Ruida)' },
+            { value: 3, label: 'AOG (Aoguan)' },
+            { value: 4, label: 'OLT (Oliter)' },
+            { value: 5, label: 'HWD (Sunwoda)' },
+            { value: 6, label: 'DAQ (Daqin)' },
+            { value: 7, label: 'WOW (SNPOWER)' },
+            { value: 8, label: 'PYL (Pylontech)' },
+            { value: 9, label: 'UOL (Vilion)' }
+          ]
+        },
+        { id: '—', address: 0xE214, name: 'Stop on BMS Error', key: 'bmsErrStop', scale: 1, unit: '', min: 0, max: 1, description: 'Halt on BMS fault',
+          options: [
+            { value: 0, label: 'Disabled' },
+            { value: 1, label: 'Enabled' }
+          ]
+        },
         { id: '—', address: 0xE005, name: 'Over-Voltage Disconnect', key: 'batOverVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Charge cutoff (12V basis)' },
         { id: '14', address: 0xE00C, name: 'Under-Voltage Alarm', key: 'underVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Low voltage warning (12V basis)' },
         { id: '12', address: 0xE00D, name: 'Over-Discharge Voltage', key: 'overDischgVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Load cutoff delayed (12V basis)' },
@@ -1768,21 +1878,43 @@
         { id: '—', address: 0xE001, name: 'PV Charge Current', key: 'pvChgCurr', scale: 0.1, unit: 'A', min: 0, max: 150, description: 'Max current from solar' },
         { id: '07', address: 0xE20A, name: 'Battery Charge Current', key: 'maxChgCurr', scale: 0.1, unit: 'A', min: 0, max: 140, description: 'Total max battery charge current' },
         { id: '28', address: 0xE205, name: 'Grid Charge Current', key: 'acChgLimit', scale: 0.1, unit: 'A', min: 0, max: 80, description: 'Max current from AC/grid' },
-        { id: '06', address: 0xE20F, name: 'Battery Charge Mode', key: 'chgSourcePriority', scale: 1, unit: '', min: 0, max: 3, description: '0:PV 1:AC 2:Hybrid 3:PV only' },
-        { id: '39', address: 0xE025, name: 'Charge Limit (BMS Mode)', key: 'bmsChgMode', scale: 1, unit: '', min: 0, max: 2, description: '0:Set 1:BMS 2:Inverter' },
+        { id: '06', address: 0xE20F, name: 'Battery Charge Mode', key: 'chgSourcePriority', scale: 1, unit: '', min: 0, max: 3, description: 'Charge source priority',
+          options: [
+            { value: 0, label: 'SNU (PV First, Grid Supplement)' },
+            { value: 1, label: 'OSO (PV Only, No Grid Charge)' }
+          ]
+        },
+        { id: '39', address: 0xE025, name: 'Charge Limit (BMS Mode)', key: 'bmsChgMode', scale: 1, unit: '', min: 0, max: 2, description: 'Charge current limit source',
+          options: [
+            { value: 0, label: 'LCSET (Use Setting #07)' },
+            { value: 1, label: 'LCBMS (Use BMS Max)' },
+            { value: 2, label: 'LCINV (Use Inverter Logic)' }
+          ]
+        },
         { id: '09', address: 0xE006, name: 'Boost Charge Voltage', key: 'chgCutoffVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Boost voltage (12V basis)' },
         { id: '17', address: 0xE007, name: 'Equalize Voltage', key: 'equalizVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Equalization voltage (12V basis)' },
         { id: '11', address: 0xE009, name: 'Float Voltage', key: 'floatVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Float charge voltage (12V basis)' },
         { id: '37', address: 0xE00A, name: 'Recharge Voltage', key: 'boostBackVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Resume charge if below (12V basis)' },
         { id: '18', address: 0xE011, name: 'Equalize Duration', key: 'equalizTime', scale: 1, unit: 'min', min: 0, max: 900, description: 'Equalization time' },
         { id: '10', address: 0xE012, name: 'Boost Charge Duration', key: 'boostTime', scale: 1, unit: 'min', min: 10, max: 900, description: 'Boost charge time' },
-        { id: '20', address: 0xE013, name: 'Equalize Interval', key: 'equalizInterval', scale: 1, unit: 'days', min: 0, max: 255, description: 'Days between equalizations' },
-        { id: '16', address: 0xE206, name: 'Equalize Enable', key: 'equalizEn', scale: 1, unit: '', min: 0, max: 1, description: 'Allow equalization' },
+        { id: '20', address: 0xE013, name: 'Equalize Interval', key: 'equalizInterval', scale: 1, unit: 'days', min: 0, max: 30, description: 'Days between equalizations' },
+        { id: '16', address: 0xE206, name: 'Equalize Enable', key: 'equalizEn', scale: 1, unit: '', min: 0, max: 1, description: 'Allow equalization',
+          options: [
+            { value: 0, label: 'DIS (Disabled)' },
+            { value: 1, label: 'ENA (Enabled)' }
+          ]
+        },
         { id: '57', address: 0xE01C, name: 'Charge Stop Current', key: 'stopChgCurr', scale: 0.1, unit: 'A', min: 0, max: 10, description: 'End charge when below (LiFePO4)' },
         { id: '60', address: 0xE01D, name: 'Charge Cutoff SoC', key: 'stopChgSoc', scale: 1, unit: '%', min: 0, max: 100, description: 'Stop charging at SoC (BMS)' },
       ],
       SOLAR: [
-        { id: '—', address: 0xE039, name: 'PV Power Priority', key: 'pvPriority', scale: 1, unit: '', min: 0, max: 2, description: '0:Charge first 1:Load first' },
+        { id: '—', address: 0xE039, name: 'PV Power Priority', key: 'pvPriority', scale: 1, unit: '', min: 0, max: 2, description: 'PV power usage priority',
+          options: [
+            { value: 0, label: 'Charge Battery First' },
+            { value: 1, label: 'Power Load First' },
+            { value: 2, label: 'Balanced' }
+          ]
+        },
       ],
       SBU_MODE: [
         { id: '04', address: 0xE01B, name: 'Battery to Mains Voltage', key: 'batSwitchDcVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Switch to AC when below (12V basis)' },
@@ -1791,7 +1923,12 @@
         { id: '62', address: 0xE020, name: 'Switch to Inverter SoC', key: 'socSwToBatt', scale: 1, unit: '%', min: 1, max: 100, description: 'Use inverter when SoC above (BMS)' },
       ],
       TIMING_CHARGE: [
-        { id: '46', address: 0xE02C, name: 'Enable Timed Charge', key: 'timedChgEn', scale: 1, unit: '', min: 0, max: 1, description: 'Time-based AC charging' },
+        { id: '46', address: 0xE02C, name: 'Enable Timed Charge', key: 'timedChgEn', scale: 1, unit: '', min: 0, max: 1, description: 'Time-based AC charging',
+          options: [
+            { value: 0, label: 'DIS (Disabled)' },
+            { value: 1, label: 'ENA (Enabled)' }
+          ]
+        },
         { id: '40', address: 0xE026, name: 'Period 1 Start', key: 'chgStart1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM (e.g. 512=02:00)' },
         { id: '41', address: 0xE027, name: 'Period 1 End', key: 'chgEnd1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM' },
         { id: '—', address: 0xE03B, name: 'Period 1 Stop SoC', key: 'chg1StopSoc', scale: 1, unit: '%', min: 0, max: 100, description: 'Stop when SoC reaches' },
@@ -1807,7 +1944,12 @@
         { id: '—', address: 0xE04D, name: 'Charge Source Bitmap', key: 'timedChgSrc', scale: 1, unit: '', min: 0, max: 7, description: 'Bitmap: AC/Gen per period' },
       ],
       TIMING_DISCHARGE: [
-        { id: '53', address: 0xE033, name: 'Enable Timed Discharge', key: 'timedDischgEn', scale: 1, unit: '', min: 0, max: 1, description: 'Time-based battery discharge' },
+        { id: '53', address: 0xE033, name: 'Enable Timed Discharge', key: 'timedDischgEn', scale: 1, unit: '', min: 0, max: 1, description: 'Time-based battery discharge',
+          options: [
+            { value: 0, label: 'DIS (Disabled)' },
+            { value: 1, label: 'ENA (Enabled)' }
+          ]
+        },
         { id: '47', address: 0xE02D, name: 'Period 1 Start', key: 'dischgStart1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM' },
         { id: '48', address: 0xE02E, name: 'Period 1 End', key: 'dischgEnd1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM' },
         { id: '—', address: 0xE03E, name: 'Period 1 Stop SoC', key: 'dischg1StopSoc', scale: 1, unit: '%', min: 0, max: 100, description: 'Stop when SoC drops to' },
@@ -1822,12 +1964,27 @@
         { id: '—', address: 0xE049, name: 'Period 3 Max Power', key: 'dischg3MaxPwr', scale: 1, unit: 'W', min: 0, max: 12000, description: 'Discharge power limit' },
       ],
       GRID: [
-        { id: '34', address: 0xE037, name: 'Limit Power to CT', key: 'gridMode', scale: 1, unit: '', min: 0, max: 3, description: '0:Off 1:Home load 2:ACout anti-backfeed 3:ACin anti-backfeed' },
-        { id: '56', address: 0xE038, name: 'Leakage Current Protection', key: 'leakageDetect', scale: 1, unit: '', min: 0, max: 1, description: 'Ground fault detection' },
+        { id: '34', address: 0xE037, name: 'Limit Power to CT', key: 'gridMode', scale: 1, unit: '', min: 0, max: 2, description: 'Grid-tie operating mode',
+          options: [
+            { value: 0, label: 'DIS (Off-Grid)' },
+            { value: 1, label: 'Home Load (Solar to Home)' }
+          ]
+        },
+        { id: '56', address: 0xE038, name: 'Leakage Current Protection', key: 'leakageDetect', scale: 1, unit: '', min: 0, max: 1, description: 'Ground fault detection',
+          options: [
+            { value: 0, label: 'DIS (Disabled)' },
+            { value: 1, label: 'ENA (Enabled)' }
+          ]
+        },
         { id: '67', address: 0xE21D, name: 'Power Sales Setting', key: 'maxLinePwr', scale: 1, unit: 'W', min: 0, max: 65535, description: 'Grid export limit' },
       ],
       GENERATOR: [
-        { id: '—', address: 0xE21A, name: 'Generator Charging', key: 'genChgDisable', scale: 1, unit: '', min: 0, max: 1, description: '0:Enabled 1:Disabled' },
+        { id: '—', address: 0xE21A, name: 'Generator Charging', key: 'genChgDisable', scale: 1, unit: '', min: 0, max: 1, description: 'Allow generator charging',
+          options: [
+            { value: 0, label: 'Enabled' },
+            { value: 1, label: 'Disabled' }
+          ]
+        },
         { id: '—', address: 0xE21F, name: 'Generator Work Mode', key: 'genWorkMode', scale: 1, unit: '', min: 0, max: 1, description: 'Operation mode' },
         { id: '73', address: 0xE220, name: 'Max Charge Current by Generator', key: 'genChgCurr', scale: 0.1, unit: 'A', min: 0, max: 100, description: 'Max current from generator' },
         { id: '74', address: 0xE221, name: 'Generator Input Power', key: 'genRatePwr', scale: 1, unit: 'W', min: 0, max: 65535, description: 'Generator rated capacity' },
@@ -1838,6 +1995,22 @@
       const row = document.createElement('div');
       row.className = 'setting-row';
       const displayId = setting.id || '—';
+      
+      // Build input control - either dropdown or number input
+      let inputControl = '';
+      if (setting.options && setting.options.length > 0) {
+        // Render dropdown for discrete options
+        inputControl = `<select class="setting-input" id="input-${setting.key}">`;
+        setting.options.forEach(opt => {
+          inputControl += `<option value="${opt.value}">${opt.label}</option>`;
+        });
+        inputControl += `</select>`;
+      } else {
+        // Render numeric input for continuous values
+        inputControl = `<input type="number" class="setting-input" id="input-${setting.key}" 
+                 min="${setting.min}" max="${setting.max}" step="${setting.scale}">`;
+      }
+      
       row.innerHTML = `
         <div class="setting-info">
           <div class="setting-name">${setting.name} <span style="color: var(--text-muted); font-weight: normal; font-size: 0.85em;">(${displayId})</span></div>
@@ -1845,8 +2018,7 @@
         </div>
         <div class="setting-controls">
           <div class="setting-value" id="setting-${setting.key}">--${setting.unit}</div>
-          <input type="number" class="setting-input" id="input-${setting.key}" 
-                 min="${setting.min}" max="${setting.max}" step="${setting.scale}">
+          ${inputControl}
           <button class="btn-set" onclick="writeSetting('${setting.key}', ${setting.address}, ${setting.scale}, '${category}')">Set</button>
         </div>
       `;
@@ -1888,14 +2060,26 @@
         // Update all settings from batch response
         for (const setting of settings) {
           const result = data.settings[setting.key];
+          const inputElem = document.getElementById(`input-${setting.key}`);
+          
           if (result && !result.unavailable) {
-            document.getElementById(`setting-${setting.key}`).textContent = `${result.scaled}${setting.unit}`;
-            document.getElementById(`input-${setting.key}`).value = result.scaled;
+            // Update display value
+            if (setting.options) {
+              // For dropdown, show the label
+              const option = setting.options.find(opt => opt.value === result.value);
+              document.getElementById(`setting-${setting.key}`).textContent = option ? option.label : result.value;
+              // Set dropdown to raw value
+              inputElem.value = result.value;
+            } else {
+              // For numeric input, show scaled value
+              document.getElementById(`setting-${setting.key}`).textContent = `${result.scaled}${setting.unit}`;
+              inputElem.value = result.scaled;
+            }
             successCount++;
           } else if (result && result.unavailable) {
             document.getElementById(`setting-${setting.key}`).textContent = 'N/A';
-            document.getElementById(`input-${setting.key}`).disabled = true;
-            document.querySelector(`#input-${setting.key}`).parentElement.querySelector('.btn-set').disabled = true;
+            inputElem.disabled = true;
+            inputElem.parentElement.querySelector('.btn-set').disabled = true;
           } else {
             document.getElementById(`setting-${setting.key}`).textContent = 'Error';
           }
@@ -1917,16 +2101,24 @@
       const valueEl = document.getElementById(`setting-${key}`);
       const statusDiv = document.getElementById(`${category.toLowerCase()}-status`);
       
-      const inputValue = parseFloat(inputEl.value);
-      if (isNaN(inputValue)) {
-        statusDiv.textContent = 'Invalid value';
-        statusDiv.style.color = 'var(--red)';
-        setTimeout(() => { statusDiv.textContent = ''; }, 3000);
-        return;
-      }
+      let registerValue;
       
-      // Convert to register value (reverse scaling)
-      const registerValue = Math.round(inputValue / scale);
+      // Check if this is a dropdown (select) or numeric input
+      if (inputEl.tagName === 'SELECT') {
+        // For dropdowns, the value is already the register value
+        registerValue = parseInt(inputEl.value);
+      } else {
+        // For numeric inputs, apply scaling
+        const inputValue = parseFloat(inputEl.value);
+        if (isNaN(inputValue)) {
+          statusDiv.textContent = 'Invalid value';
+          statusDiv.style.color = 'var(--red)';
+          setTimeout(() => { statusDiv.textContent = ''; }, 3000);
+          return;
+        }
+        // Convert to register value (reverse scaling)
+        registerValue = Math.round(inputValue / scale);
+      }
       
       try {
         statusDiv.textContent = 'Writing...';
