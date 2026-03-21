@@ -1026,8 +1026,33 @@
     });
 
     // Sparkline data buffer - keep last 200 points (10 minutes at 3s interval)
-    const loadHistory = [];
     const MAX_HISTORY = 200;
+    let loadHistory = [];
+    
+    // Load sparkline history from localStorage
+    try {
+      const saved = localStorage.getItem('loadHistory');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          loadHistory = parsed.slice(-MAX_HISTORY);
+          // Redraw on next tick after page loads
+          setTimeout(() => {
+            const canvas = document.getElementById('load-sparkline');
+            if (canvas) {
+              const rect = canvas.getBoundingClientRect();
+              canvas.width = rect.width * window.devicePixelRatio;
+              canvas.height = rect.height * window.devicePixelRatio;
+              const ctx = canvas.getContext('2d');
+              ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+              drawSparkline(canvas, loadHistory, rect.width, rect.height);
+            }
+          }, 100);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load sparkline history:', e);
+    }
 
     function drawSparkline(canvas, data, width, height) {
       if (!canvas || data.length === 0) return;
@@ -1045,6 +1070,14 @@
       const max = Math.max(...values, 100); // Ensure at least 100W range
       const range = max - min;
       
+      // Calculate x-axis scaling
+      // If buffer not full, stretch to use full width
+      // If buffer is full, use fixed width per point (scrolling effect)
+      const pointsToShow = data.length;
+      const xScale = pointsToShow < MAX_HISTORY 
+        ? width / Math.max(pointsToShow - 1, 1)  // Stretch to fill width
+        : width / (MAX_HISTORY - 1);              // Fixed width per point
+      
       // Draw line
       ctx.strokeStyle = getComputedStyle(document.documentElement)
         .getPropertyValue('--accent').trim();
@@ -1058,7 +1091,7 @@
       data.forEach((value, index) => {
         if (value === null || isNaN(value) || value < 0) return;
         
-        const x = data.length > 1 ? (index / (data.length - 1)) * width : width / 2;
+        const x = index * xScale;
         const y = height - ((value - min) / range) * (height - 10) - 5;
         
         if (!started) {
@@ -1093,6 +1126,13 @@
       // Keep only last MAX_HISTORY points
       if (loadHistory.length > MAX_HISTORY) {
         loadHistory.shift();
+      }
+      
+      // Save to localStorage
+      try {
+        localStorage.setItem('loadHistory', JSON.stringify(loadHistory));
+      } catch (e) {
+        console.warn('Failed to save sparkline history:', e);
       }
       
       const canvas = document.getElementById('load-sparkline');
