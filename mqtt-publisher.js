@@ -129,6 +129,12 @@ export class MqttPublisher {
       this.publish('electrical.inverters.0.mode', mode);
       this.publish('electrical.inverters.0.modeText', data.systemStatus.stateText);
       this.publish('electrical.inverters.0.state', data.systemStatus.state);
+      
+      if (data.systemStatus.faultCodes && data.systemStatus.faultCodes.length > 0) {
+        data.systemStatus.faultCodes.forEach((code, index) => {
+          this.publish(`electrical.inverters.0.faultCode${index}`, code);
+        });
+      }
     }
 
     if (data.battery) {

@@ -1,4 +1,4 @@
-import { REGISTERS, MACHINE_STATES, CHARGE_STATES } from './registers.js';
+import { REGISTERS, MACHINE_STATES, CHARGE_STATES, FAULT_CODES } from './registers.js';
 
 export class InverterDataParser {
   constructor(modbusClient) {
@@ -7,12 +7,17 @@ export class InverterDataParser {
 
   parseSystemStatus(rawData) {
     const machineState = rawData.MACHINE_STATE?.data?.[0];
-    const faultCodes = rawData.CURR_FCODE?.data || [];
+    const faultCodesRaw = rawData.CURR_FCODE?.data || [];
+    const activeFaultCodes = faultCodesRaw.filter(code => code !== 0);
 
     return {
       state: machineState,
       stateText: MACHINE_STATES[machineState] || `Unknown (${machineState})`,
-      faultCodes: faultCodes.filter(code => code !== 0)
+      faultCodes: activeFaultCodes,
+      faults: activeFaultCodes.map(code => ({
+        code: code,
+        text: FAULT_CODES[code] || `Unknown Fault (${code})`
+      }))
     };
   }
 

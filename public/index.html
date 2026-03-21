@@ -71,7 +71,7 @@
       left: 0;
       right: 0;
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: center;
       gap: 15px;
       padding: 8px 15px;
@@ -80,6 +80,37 @@
       border-top: 2px solid var(--blue);
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
       z-index: 1000;
+    }
+
+    .footer-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .footer-check {
+      font-size: 1.2rem;
+      font-weight: bold;
+      min-width: 20px;
+    }
+
+    .footer-check.ok {
+      color: var(--green);
+    }
+
+    .footer-check.alert {
+      color: var(--red);
+    }
+
+    .footer-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .theme-switch {
@@ -243,6 +274,47 @@
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
+    }
+
+    .status-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+
+    .status-check {
+      font-size: 1.3rem;
+      font-weight: bold;
+      min-width: 20px;
+    }
+
+    .status-check.connected {
+      color: var(--green);
+    }
+
+    .status-check.error {
+      color: var(--red);
+    }
+
+    .status-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
     .card {
@@ -483,20 +555,9 @@
   </div>
 
   <div class="status-bar">
-    <div class="status-indicator">
-      <span style="font-size: 14px; margin-right: 4px;">💻</span>
-      <div class="status-dot connected" id="status-dot" title="Web App"></div>
-    </div>
-    <div class="status-indicator">
-      <span style="font-size: 14px; margin-right: 4px;">🔌</span>
-      <div class="status-dot connected" id="inverter-dot" title="Inverter"></div>
-    </div>
-    <div class="status-indicator">
-      <span style="font-size: 14px; margin-right: 4px;">📡</span>
-      <div class="status-dot connected" id="mqtt-dot" title="MQTT"></div>
-    </div>
-    <div class="status-indicator">
-      <span id="state-badge" class="state-badge state-standby">STANDBY</span>
+    <div class="footer-status">
+      <span id="footer-status-icon" class="footer-check">✓</span>
+      <span id="footer-status-text" class="footer-text">STANDBY</span>
     </div>
     <div class="theme-switch" onclick="toggleTheme()">
       <span>☀️</span>
@@ -516,6 +577,21 @@
   </div>
 
   <div id="summary" class="tab-content active">
+    <div class="status-panel">
+      <div class="status-item">
+        <span class="status-check" id="app-check">✓</span>
+        <span class="status-label">Web App</span>
+      </div>
+      <div class="status-item">
+        <span class="status-check" id="inverter-check">✓</span>
+        <span class="status-label">Inverter</span>
+      </div>
+      <div class="status-item">
+        <span class="status-check" id="mqtt-check">✓</span>
+        <span class="status-label">MQTT</span>
+      </div>
+    </div>
+
     <div class="hero-metric">
       <div class="hero-label">Battery State of Charge</div>
       <div class="hero-value" id="summary-soc">--<span class="hero-unit">%</span></div>
@@ -896,11 +972,17 @@
           return;
         }
         
-        const inverterDot = document.getElementById('inverter-dot');
-        const mqttDot = document.getElementById('mqtt-dot');
+        // Update top status panel checkboxes
+        const appCheck = document.getElementById('app-check');
+        const inverterCheck = document.getElementById('inverter-check');
+        const mqttCheck = document.getElementById('mqtt-check');
+        
+        appCheck.textContent = '✓';
+        appCheck.className = 'status-check connected';
         
         if (data.inverterConnected !== undefined) {
-          inverterDot.className = data.inverterConnected ? 'status-dot connected' : 'status-dot error';
+          inverterCheck.textContent = data.inverterConnected ? '✓' : '✗';
+          inverterCheck.className = data.inverterConnected ? 'status-check connected' : 'status-check error';
           
           const overlay = document.getElementById('connection-lost-overlay');
           if (!data.inverterConnected) {
@@ -911,7 +993,30 @@
         }
         
         if (data.mqttConnected !== undefined) {
-          mqttDot.className = data.mqttConnected ? 'status-dot connected' : 'status-dot error';
+          mqttCheck.textContent = data.mqttConnected ? '✓' : '✗';
+          mqttCheck.className = data.mqttConnected ? 'status-check connected' : 'status-check error';
+        }
+        
+        // Update footer with state and alerts
+        if (data.systemStatus) {
+          const footerIcon = document.getElementById('footer-status-icon');
+          const footerText = document.getElementById('footer-status-text');
+          
+          const hasFaults = data.systemStatus.faults && data.systemStatus.faults.length > 0;
+          
+          if (hasFaults) {
+            footerIcon.textContent = '⚠';
+            footerIcon.className = 'footer-check alert';
+            const faultMessages = data.systemStatus.faults.map(f => `${f.text} (${f.code})`).join(' • ');
+            footerText.textContent = faultMessages;
+          } else {
+            footerIcon.textContent = '✓';
+            footerIcon.className = 'footer-check ok';
+            let stateText = (data.systemStatus.stateText || 'Unknown').toUpperCase();
+            if (stateText.includes('AC POWER')) stateText = 'BYPASS';
+            else if (stateText.includes('INVERTER OPERATION')) stateText = 'INVERTING';
+            footerText.textContent = stateText;
+          }
         }
         
         if (data.systemStatus || data.battery || data.ac) {
@@ -919,27 +1024,30 @@
         }
         
         lastUpdate = Date.now();
-        document.getElementById('status-dot').className = 'status-dot connected';
       } catch (error) {
         console.error('Error parsing SSE data:', error);
       }
     };
 
     eventSource.onerror = () => {
-      document.getElementById('status-dot').className = 'status-dot error';
+      const appCheck = document.getElementById('app-check');
+      appCheck.textContent = '✗';
+      appCheck.className = 'status-check error';
     };
 
     eventSource.onopen = () => {
       console.log('SSE connection established');
-      document.getElementById('status-dot').className = 'status-dot connected';
-      document.getElementById('inverter-dot').className = 'status-dot connected';
-      document.getElementById('mqtt-dot').className = 'status-dot connected';
+      const appCheck = document.getElementById('app-check');
+      appCheck.textContent = '✓';
+      appCheck.className = 'status-check connected';
     };
 
     setInterval(() => {
       const elapsed = Date.now() - lastUpdate;
       if (elapsed > 3000) {
-        document.getElementById('status-dot').className = 'status-dot error';
+        const appCheck = document.getElementById('app-check');
+        appCheck.textContent = '✗';
+        appCheck.className = 'status-check error';
       }
     }, 5000);
 
@@ -947,27 +1055,6 @@
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       document.getElementById('timestamp').textContent = timeStr;
-
-      if (data.systemStatus) {
-        const state = data.systemStatus.stateText || 'Unknown';
-        const badge = document.getElementById('state-badge');
-        
-        let displayText = state.toUpperCase();
-        if (displayText.includes('AC POWER')) {
-          displayText = 'BYPASS';
-        } else if (displayText.includes('INVERTER OPERATION')) {
-          displayText = 'INVERTING';
-        } else if (displayText.includes('SWITCHING') || displayText.includes('ACTIVATING')) {
-          displayText = 'SWITCHING';
-        }
-        badge.textContent = displayText;
-        
-        badge.className = 'state-badge';
-        if (state.includes('Inverter Operation')) badge.classList.add('state-inverting');
-        else if (state.includes('Bypass') || state.includes('AC Power')) badge.classList.add('state-bypass');
-        else if (state.includes('Standby')) badge.classList.add('state-standby');
-        else if (state.includes('Fault')) badge.classList.add('state-fault');
-      }
 
       if (data.battery) {
         const b = data.battery;
