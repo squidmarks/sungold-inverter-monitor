@@ -706,6 +706,12 @@
       border-color: var(--accent);
     }
 
+    .setting-input:disabled,
+    .btn-set:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
     .btn-primary, .btn-set {
       padding: 8px 16px;
       background: var(--accent);
@@ -1880,10 +1886,14 @@
         // Update all settings from batch response
         for (const setting of settings) {
           const result = data.settings[setting.key];
-          if (result) {
+          if (result && !result.unavailable) {
             document.getElementById(`setting-${setting.key}`).textContent = `${result.scaled}${setting.unit}`;
             document.getElementById(`input-${setting.key}`).value = result.scaled;
             successCount++;
+          } else if (result && result.unavailable) {
+            document.getElementById(`setting-${setting.key}`).textContent = 'N/A';
+            document.getElementById(`input-${setting.key}`).disabled = true;
+            document.querySelector(`#input-${setting.key}`).parentElement.querySelector('.btn-set').disabled = true;
           } else {
             document.getElementById(`setting-${setting.key}`).textContent = 'Error';
           }

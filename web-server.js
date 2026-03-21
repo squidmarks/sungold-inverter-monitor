@@ -81,12 +81,21 @@ export class WebServer {
           } else {
             // Address range is too large, read individually with short delays
             for (const setting of settings) {
-              const values = await this.modbusClient.readRegisters(setting.address, 1);
-              results[setting.key] = {
-                value: values[0],
-                scaled: (values[0] * setting.scale).toFixed(setting.scale < 1 ? 1 : 0),
-                unit: setting.unit
-              };
+              try {
+                const values = await this.modbusClient.readRegisters(setting.address, 1);
+                results[setting.key] = {
+                  value: values[0],
+                  scaled: (values[0] * setting.scale).toFixed(setting.scale < 1 ? 1 : 0),
+                  unit: setting.unit
+                };
+              } catch (error) {
+                // Register doesn't exist on this inverter model, mark as unavailable
+                if (error.message.includes('Modbus exception 2') || error.message.includes('Illegal')) {
+                  results[setting.key] = { unavailable: true };
+                } else {
+                  throw error;
+                }
+              }
               await new Promise(resolve => setTimeout(resolve, 150));
             }
           }
