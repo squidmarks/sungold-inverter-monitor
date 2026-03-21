@@ -12,48 +12,48 @@
     }
 
     :root {
-      --navy: #0a1929;
-      --dark-navy: #050c15;
-      --blue: #1e88e5;
-      --light-blue: #42a5f5;
-      --cyan: #00bcd4;
-      --green: #4caf50;
-      --yellow: #ffc107;
-      --orange: #ff9800;
-      --red: #f44336;
+      --navy: #1a1a1a;
+      --dark-navy: #0d0d0d;
+      --blue: #2563eb;
+      --light-blue: #3b82f6;
+      --accent: #2563eb;
+      --green: #22c55e;
+      --yellow: #fbbf24;
+      --orange: #f97316;
+      --red: #ef4444;
       --white: #ffffff;
-      --light-gray: #e0e0e0;
-      --gray: #9e9e9e;
-      --border: #263238;
+      --light-gray: #e5e7eb;
+      --gray: #9ca3af;
+      --border: #374151;
       
-      --bg-gradient-start: #050c15;
-      --bg-gradient-end: #0a1929;
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --card-border: #263238;
-      --text-primary: #ffffff;
-      --text-secondary: #e0e0e0;
-      --text-muted: #9e9e9e;
-      --footer-bg: rgba(5, 12, 21, 0.95);
-      --tab-bg: rgba(0, 0, 0, 0.3);
+      --bg-gradient-start: #0d0d0d;
+      --bg-gradient-end: #1a1a1a;
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: #374151;
+      --text-primary: #f3f4f6;
+      --text-secondary: #d1d5db;
+      --text-muted: #9ca3af;
+      --footer-bg: rgba(13, 13, 13, 0.95);
+      --tab-bg: rgba(255, 255, 255, 0.05);
     }
 
     body.light-mode {
-      --navy: #e3f2fd;
-      --dark-navy: #bbdefb;
-      --blue: #1976d2;
-      --light-blue: #2196f3;
-      --cyan: #0097a7;
-      --border: #90caf9;
+      --navy: #f9fafb;
+      --dark-navy: #f3f4f6;
+      --blue: #1e40af;
+      --light-blue: #2563eb;
+      --accent: #1e40af;
+      --border: #d1d5db;
       
-      --bg-gradient-start: #e3f2fd;
-      --bg-gradient-end: #bbdefb;
-      --card-bg: rgba(255, 255, 255, 0.8);
-      --card-border: #90caf9;
-      --text-primary: #0d47a1;
-      --text-secondary: #1565c0;
-      --text-muted: #5e92f3;
-      --footer-bg: rgba(227, 242, 253, 0.95);
-      --tab-bg: rgba(187, 222, 251, 0.8);
+      --bg-gradient-start: #ffffff;
+      --bg-gradient-end: #f9fafb;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --card-border: #e5e7eb;
+      --text-primary: #1f2937;
+      --text-secondary: #374151;
+      --text-muted: #6b7280;
+      --footer-bg: rgba(249, 250, 251, 0.95);
+      --tab-bg: rgba(243, 244, 246, 0.8);
     }
 
     body {
@@ -189,7 +189,7 @@
     .activity-dot {
       width: 8px;
       height: 8px;
-      background: var(--cyan);
+      background: var(--accent);
       border-radius: 50%;
       position: absolute;
       top: 2px;
@@ -201,7 +201,7 @@
     .activity-pulse {
       width: 12px;
       height: 12px;
-      background: var(--cyan);
+      background: var(--accent);
       border-radius: 50%;
       position: absolute;
       top: 0;
@@ -322,13 +322,13 @@
 
     .tab:hover {
       color: var(--light-blue);
-      background: rgba(30, 136, 229, 0.1);
+      background: rgba(37, 99, 235, 0.1);
     }
 
     .tab.active {
-      color: var(--cyan);
-      border-bottom-color: var(--cyan);
-      background: rgba(0, 188, 212, 0.1);
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(37, 99, 235, 0.1);
     }
 
     .tab-content {
@@ -412,7 +412,7 @@
     .card-title {
       font-size: 1.1rem;
       font-weight: 500;
-      color: var(--cyan);
+      color: var(--accent);
       margin-bottom: 15px;
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
@@ -441,7 +441,7 @@
     .hero-value {
       font-size: 3rem;
       font-weight: 300;
-      color: var(--cyan);
+      color: var(--accent);
       line-height: 1;
     }
 
@@ -503,7 +503,7 @@
 
     .phase-title {
       font-size: 0.85rem;
-      color: var(--cyan);
+      color: var(--accent);
       margin-bottom: 10px;
       font-weight: 600;
       text-transform: uppercase;
