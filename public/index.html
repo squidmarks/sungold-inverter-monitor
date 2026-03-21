@@ -1004,8 +1004,7 @@
       setTimeout(() => {
         const canvas = document.getElementById('load-sparkline');
         if (canvas && loadHistory.length > 0) {
-          const rect = canvas.getBoundingClientRect();
-          drawSparkline(canvas, loadHistory, rect.width, rect.height);
+          drawSparkline(canvas, loadHistory);
         }
       }, 50);
     }
@@ -1045,7 +1044,7 @@
               canvas.height = rect.height * window.devicePixelRatio;
               const ctx = canvas.getContext('2d');
               ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-              drawSparkline(canvas, loadHistory, rect.width, rect.height);
+              drawSparkline(canvas, loadHistory);
             }
           }, 100);
         }
@@ -1054,10 +1053,11 @@
       console.warn('Failed to load sparkline history:', e);
     }
 
-    function drawSparkline(canvas, data, width, height) {
+    function drawSparkline(canvas, data) {
       if (!canvas || data.length === 0) return;
       
       const ctx = canvas.getContext('2d');
+      const rect = canvas.getBoundingClientRect();
       
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1070,13 +1070,9 @@
       const max = Math.max(...values, 100); // Ensure at least 100W range
       const range = max - min;
       
-      // Calculate x-axis scaling
-      // If buffer not full, stretch to use full width
-      // If buffer is full, use fixed width per point (scrolling effect)
-      const pointsToShow = data.length;
-      const xScale = pointsToShow < MAX_HISTORY 
-        ? width / Math.max(pointsToShow - 1, 1)  // Stretch to fill width
-        : width / (MAX_HISTORY - 1);              // Fixed width per point
+      // X-axis: always stretch data to fill available width
+      const pointCount = data.length;
+      const xStep = pointCount > 1 ? rect.width / (pointCount - 1) : rect.width / 2;
       
       // Draw line
       ctx.strokeStyle = getComputedStyle(document.documentElement)
@@ -1091,8 +1087,8 @@
       data.forEach((value, index) => {
         if (value === null || isNaN(value) || value < 0) return;
         
-        const x = index * xScale;
-        const y = height - ((value - min) / range) * (height - 10) - 5;
+        const x = index * xStep;
+        const y = rect.height - ((value - min) / range) * (rect.height - 10) - 5;
         
         if (!started) {
           ctx.moveTo(x, y);
@@ -1106,11 +1102,11 @@
       
       // Draw subtle fill under line
       if (started) {
-        ctx.lineTo(width, height);
-        ctx.lineTo(0, height);
+        ctx.lineTo(rect.width, rect.height);
+        ctx.lineTo(0, rect.height);
         ctx.closePath();
         
-        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        const gradient = ctx.createLinearGradient(0, 0, 0, rect.height);
         const accentColor = getComputedStyle(document.documentElement)
           .getPropertyValue('--accent').trim();
         gradient.addColorStop(0, accentColor + '40');
@@ -1137,15 +1133,14 @@
       
       const canvas = document.getElementById('load-sparkline');
       if (canvas) {
-        // Set canvas resolution
+        // Set canvas resolution for retina displays
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width * window.devicePixelRatio;
         canvas.height = rect.height * window.devicePixelRatio;
         const ctx = canvas.getContext('2d');
         ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
         
-        // Pass actual display dimensions
-        drawSparkline(canvas, loadHistory, rect.width, rect.height);
+        drawSparkline(canvas, loadHistory);
       }
     }
 
