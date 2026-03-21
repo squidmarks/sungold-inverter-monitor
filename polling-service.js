@@ -80,16 +80,18 @@ export class PollingService {
     }
     
     // Charging projection - time to 100%
-    if (current > 1 && soc < 98) {
+    // Negative current = charging
+    if (current < -1 && soc < 98) {
       const socRemaining = 100 - soc;
-      const hoursToFull = (socRemaining / 100) * this.batteryCapacityAh / current;
+      const hoursToFull = (socRemaining / 100) * this.batteryCapacityAh / Math.abs(current);
       projections.timeToFull = hoursToFull; // in hours
     }
     
     // Discharging projection - time remaining to MIN_BATTERY_SOC
-    if (current < -1 && soc > this.minBatterySoc) {
+    // Positive current = discharging
+    if (current > 1 && soc > this.minBatterySoc) {
       // Track discharge current for moving average
-      this.dischargeCurrentHistory.push(Math.abs(current));
+      this.dischargeCurrentHistory.push(current);
       if (this.dischargeCurrentHistory.length > this.maxDischargeHistory) {
         this.dischargeCurrentHistory.shift();
       }
