@@ -163,22 +163,58 @@
       font-weight: 500;
     }
 
-    .heartbeat {
-      font-size: 1rem;
+    .activity-indicator {
+      position: relative;
+      width: 12px;
+      height: 12px;
       display: inline-block;
-      opacity: 0.5;
+    }
+
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--cyan);
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      opacity: 0.6;
       transition: opacity 0.3s;
     }
 
-    .heartbeat.beat {
-      animation: heartbeat 0.6s ease-in-out;
+    .activity-pulse {
+      width: 12px;
+      height: 12px;
+      background: var(--cyan);
+      border-radius: 50%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
     }
 
-    @keyframes heartbeat {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      25% { transform: scale(1.3); opacity: 1; }
-      50% { transform: scale(1); opacity: 0.8; }
-      75% { transform: scale(1.2); opacity: 1; }
+    .activity-indicator.active .activity-pulse {
+      animation: pulse-ring 0.8s ease-out;
+    }
+
+    .activity-indicator.active .activity-dot {
+      opacity: 1;
+    }
+
+    .activity-indicator.inactive .activity-dot {
+      opacity: 0.2;
+      background: var(--gray);
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
     }
 
     .status-dot {
@@ -585,7 +621,10 @@
       <span>🌙</span>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span id="heartbeat" class="heartbeat">❤️</span>
+      <div id="activity-indicator" class="activity-indicator" title="Data Activity">
+        <div class="activity-pulse"></div>
+        <div class="activity-dot"></div>
+      </div>
       <div class="timestamp" id="timestamp">--</div>
     </div>
   </div>
@@ -989,11 +1028,12 @@
           return;
         }
         
-        // Trigger heartbeat animation
-        const heartbeat = document.getElementById('heartbeat');
-        heartbeat.classList.remove('beat');
-        void heartbeat.offsetWidth; // Force reflow
-        heartbeat.classList.add('beat');
+        // Trigger activity indicator animation
+        const activityIndicator = document.getElementById('activity-indicator');
+        activityIndicator.classList.remove('active');
+        activityIndicator.classList.remove('inactive');
+        void activityIndicator.offsetWidth; // Force reflow
+        activityIndicator.classList.add('active');
         
         // Update top status panel checkboxes
         const inverterCheck = document.getElementById('inverter-check');
@@ -1049,22 +1089,23 @@
     };
 
     eventSource.onerror = () => {
-      const heartbeat = document.getElementById('heartbeat');
-      heartbeat.style.opacity = '0.2';
+      const activityIndicator = document.getElementById('activity-indicator');
+      activityIndicator.classList.remove('active');
+      activityIndicator.classList.add('inactive');
     };
 
     eventSource.onopen = () => {
       console.log('SSE connection established');
-      const heartbeat = document.getElementById('heartbeat');
-      heartbeat.style.opacity = '0.5';
+      const activityIndicator = document.getElementById('activity-indicator');
+      activityIndicator.classList.remove('inactive');
     };
 
     setInterval(() => {
       const elapsed = Date.now() - lastUpdate;
       if (elapsed > 3000) {
-        const heartbeat = document.getElementById('heartbeat');
-        heartbeat.style.opacity = '0.2';
-        heartbeat.classList.remove('beat');
+        const activityIndicator = document.getElementById('activity-indicator');
+        activityIndicator.classList.remove('active');
+        activityIndicator.classList.add('inactive');
       }
     }, 5000);
 
