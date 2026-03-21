@@ -5,6 +5,7 @@ import { InverterModbusClient } from './modbus-client.js';
 import { PollingService } from './polling-service.js';
 import { WebServer } from './web-server.js';
 import { MqttPublisher } from './mqtt-publisher.js';
+import { ModbusLock } from './modbus-lock.js';
 
 async function main() {
   const config = loadConfig();
@@ -37,7 +38,10 @@ async function main() {
     process.exit(1);
   }
 
-  const webServer = new WebServer(config.WEB_PORT, config, modbusClient);
+  // Shared lock to coordinate settings reads and polling
+  const modbusLock = new ModbusLock();
+
+  const webServer = new WebServer(config.WEB_PORT, config, modbusClient, modbusLock);
   await webServer.start();
 
   const mqttPublisher = new MqttPublisher(config.MQTT_HOST, config.MQTT_PORT, {
@@ -51,7 +55,7 @@ async function main() {
     console.log('  Continuing without MQTT publishing...\n');
   }
 
-  const pollingService = new PollingService(modbusClient, config.POLL_INTERVAL_MS, webServer, mqttPublisher, config);
+  const pollingService = new PollingService(modbusClient, config.POLL_INTERVAL_MS, webServer, mqttPublisher, config, modbusLock);
 
   process.on('SIGINT', async () => {
     console.log('\n\nShutting down...');

@@ -5,10 +5,11 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class WebServer {
-  constructor(port = 3000, config = {}, modbusClient = null) {
+  constructor(port = 3000, config = {}, modbusClient = null, modbusLock = null) {
     this.port = port;
     this.config = config;
     this.modbusClient = modbusClient;
+    this.modbusLock = modbusLock;
     this.app = express();
     this.clients = new Set();
     this.latestData = null;
@@ -43,9 +44,23 @@ export class WebServer {
           return res.status(503).json({ error: 'Modbus client not connected' });
         }
         
-        const values = await this.modbusClient.readRegisters(address, 1);
-        res.json({ address, value: values[0] });
+        // Acquire lock to prevent interference with polling
+        if (this.modbusLock) {
+          await this.modbusLock.acquire(5000);
+        }
+        
+        try {
+          const values = await this.modbusClient.readRegisters(address, 1);
+          res.json({ address, value: values[0] });
+        } finally {
+          if (this.modbusLock) {
+            this.modbusLock.release();
+          }
+        }
       } catch (error) {
+        if (this.modbusLock) {
+          this.modbusLock.release();
+        }
         res.status(500).json({ error: error.message });
       }
     });
@@ -64,9 +79,23 @@ export class WebServer {
           return res.status(503).json({ error: 'Modbus client not connected' });
         }
         
-        const result = await this.modbusClient.writeSingleRegister(address, value);
-        res.json({ success: true, ...result });
+        // Acquire lock to prevent interference with polling
+        if (this.modbusLock) {
+          await this.modbusLock.acquire(5000);
+        }
+        
+        try {
+          const result = await this.modbusClient.writeSingleRegister(address, value);
+          res.json({ success: true, ...result });
+        } finally {
+          if (this.modbusLock) {
+            this.modbusLock.release();
+          }
+        }
       } catch (error) {
+        if (this.modbusLock) {
+          this.modbusLock.release();
+        }
         res.status(500).json({ error: error.message });
       }
     });

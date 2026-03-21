@@ -2,11 +2,12 @@ import { REGISTER_GROUPS } from './registers.js';
 import { InverterDataParser } from './data-parser.js';
 
 export class PollingService {
-  constructor(modbusClient, pollInterval, webServer = null, mqttPublisher = null, config = {}) {
+  constructor(modbusClient, pollInterval, webServer = null, mqttPublisher = null, config = {}, modbusLock = null) {
     this.modbusClient = modbusClient;
     this.pollInterval = pollInterval;
     this.webServer = webServer;
     this.mqttPublisher = mqttPublisher;
+    this.modbusLock = modbusLock;
     this.parser = new InverterDataParser(modbusClient);
     this.isRunning = false;
     this.isPolling = false;
@@ -114,7 +115,18 @@ export class PollingService {
       return;
     }
     
+    // Skip polling if settings are being read
+    if (this.modbusLock && this.modbusLock.isLocked()) {
+      console.warn('⚠ Skipping poll - settings operation in progress');
+      return;
+    }
+    
     this.isPolling = true;
+    
+    // Acquire lock to prevent settings reads during polling
+    if (this.modbusLock) {
+      await this.modbusLock.acquire(5000);
+    }
     
     try {
       const systemStatusGroups = REGISTER_GROUPS.SYSTEM_STATUS;
@@ -162,11 +174,8 @@ export class PollingService {
       if (this.mqttPublisher) {
         this.mqttPublisher.publishInverterData(payload);
       }
-      
-      this.isPolling = false;
 
     } catch (error) {
-      this.isPolling = false;
       console.error('Error during polling:', error.message);
       
       if (this.webServer) {
@@ -196,6 +205,12 @@ export class PollingService {
           console.error('Reconnection error:', reconnectError.message);
         }
       }
+    } finally {
+      // Always release lock and polling flag
+      if (this.modbusLock) {
+        this.modbusLock.release();
+      }
+      this.isPolling = false;
     }
   }
 }

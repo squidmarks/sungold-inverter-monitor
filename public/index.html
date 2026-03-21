@@ -1799,8 +1799,8 @@
             successCount++;
           }
           
-          // 200ms delay between reads to avoid overwhelming inverter
-          await new Promise(resolve => setTimeout(resolve, 200));
+          // 300ms delay between reads to avoid overwhelming inverter
+          await new Promise(resolve => setTimeout(resolve, 300));
         } catch (error) {
           console.error(`Failed to read ${setting.name}:`, error);
           document.getElementById(`setting-${setting.key}`).textContent = 'Error';
