@@ -139,8 +139,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .switch-slider svg {
+      width: 14px;
+      height: 14px;
+      fill: #2d3748;
+      stroke: #2d3748;
+      stroke-width: 2;
+      stroke-linecap: round;
     }
 
     body.light-mode .switch {
@@ -151,6 +159,11 @@
     body.light-mode .switch-slider {
       transform: translateX(32px);
       background: #1f2937;
+    }
+
+    body.light-mode .switch-slider svg {
+      fill: #ffffff;
+      stroke: #ffffff;
     }
 
     .status-indicator {
@@ -618,7 +631,11 @@
     </div>
     <div class="theme-switch" onclick="toggleTheme()">
       <div class="switch" id="theme-toggle">
-        <div class="switch-slider" id="theme-icon">☀️</div>
+        <div class="switch-slider" id="theme-slider">
+          <svg id="theme-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </div>
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
@@ -1009,7 +1026,10 @@
       toggle.classList.toggle('active');
       
       const isLight = body.classList.contains('light-mode');
-      icon.textContent = isLight ? '🌙' : '☀️';
+      // Sun for light mode, Moon for dark mode
+      icon.innerHTML = isLight 
+        ? '<circle cx="12" cy="12" r="5" fill="none"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
       localStorage.setItem('theme', isLight ? 'light' : 'dark');
     }
 
@@ -1018,10 +1038,13 @@
       showTab(savedTab);
       
       const savedTheme = localStorage.getItem('theme');
+      const icon = document.getElementById('theme-icon');
+      
       if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
         document.getElementById('theme-toggle').classList.add('active');
-        document.getElementById('theme-icon').textContent = '🌙';
+        // Sun icon for light mode
+        icon.innerHTML = '<circle cx="12" cy="12" r="5" fill="none"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
       }
     });
 
