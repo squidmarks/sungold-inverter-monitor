@@ -680,13 +680,6 @@
       gap: 8px;
     }
 
-    .setting-value {
-      min-width: 80px;
-      text-align: right;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-
     .setting-input {
       width: 100px;
       padding: 6px 10px;
@@ -2017,7 +2010,6 @@
           <div class="setting-description">${setting.description}</div>
         </div>
         <div class="setting-controls">
-          <div class="setting-value" id="setting-${setting.key}">--${setting.unit}</div>
           ${inputControl}
           <button class="btn-set" onclick="writeSetting('${setting.key}', ${setting.address}, ${setting.scale}, '${category}')">Set</button>
         </div>
@@ -2063,25 +2055,18 @@
           const inputElem = document.getElementById(`input-${setting.key}`);
           
           if (result && !result.unavailable) {
-            // Update display value
+            // Set input/dropdown to current value
             if (setting.options) {
-              // For dropdown, show the label
-              const option = setting.options.find(opt => opt.value === result.value);
-              document.getElementById(`setting-${setting.key}`).textContent = option ? option.label : result.value;
-              // Set dropdown to raw value
+              // For dropdown, set to raw register value
               inputElem.value = result.value;
             } else {
-              // For numeric input, show scaled value
-              document.getElementById(`setting-${setting.key}`).textContent = `${result.scaled}${setting.unit}`;
+              // For numeric input, set to scaled value
               inputElem.value = result.scaled;
             }
             successCount++;
           } else if (result && result.unavailable) {
-            document.getElementById(`setting-${setting.key}`).textContent = 'N/A';
             inputElem.disabled = true;
             inputElem.parentElement.querySelector('.btn-set').disabled = true;
-          } else {
-            document.getElementById(`setting-${setting.key}`).textContent = 'Error';
           }
         }
         
