@@ -347,30 +347,39 @@
     }
 
     .status-panel {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-      padding: 15px;
-      background: var(--card-bg);
+      text-align: center;
+      padding: 20px 15px;
+      background: rgba(30, 136, 229, 0.1);
+      border-radius: 10px;
+      margin-bottom: 15px;
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
+      transition: background 0.3s, border 0.3s;
+    }
+
+    .status-panel-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+
+    .status-items {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
     }
 
     .status-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 8px;
+      gap: 10px;
     }
 
     .status-check {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: bold;
-      min-width: 20px;
     }
 
     .status-check.connected {
@@ -382,7 +391,7 @@
     }
 
     .status-label {
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       color: var(--text-secondary);
       font-weight: 500;
     }
@@ -612,6 +621,18 @@
         padding: 15px;
       }
 
+      .status-items {
+        gap: 25px;
+      }
+
+      .status-check {
+        font-size: 1.2rem;
+      }
+
+      .status-label {
+        font-size: 0.85rem;
+      }
+
       .summary-value {
         font-size: 1.5rem;
       }
@@ -655,15 +676,15 @@
   </div>
 
   <div id="summary" class="tab-content active">
-    <div class="card" style="margin-bottom: 20px;">
-      <div class="card-title">Connectivity Status</div>
-      <div class="status-panel" style="margin-bottom: 0; border: none; padding: 0;">
+    <div class="status-panel">
+      <div class="status-panel-label">Connectivity Status</div>
+      <div class="status-items">
         <div class="status-item">
-          <span class="status-check" id="inverter-check">✓</span>
+          <span class="status-check connected" id="inverter-check">✓</span>
           <span class="status-label">Inverter</span>
         </div>
         <div class="status-item">
-          <span class="status-check" id="mqtt-check">✓</span>
+          <span class="status-check connected" id="mqtt-check">✓</span>
           <span class="status-label">MQTT</span>
         </div>
       </div>
