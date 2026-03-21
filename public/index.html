@@ -587,7 +587,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       padding: 15px;
       background: var(--card-bg);
       border-radius: 12px;
@@ -597,6 +597,45 @@
     .settings-status {
       font-size: 0.9rem;
       color: var(--text-muted);
+    }
+
+    .sub-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .sub-tab {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .sub-tab:hover {
+      color: var(--light-blue);
+    }
+
+    .sub-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .settings-tab-content {
+      display: none;
+    }
+
+    .settings-tab-content.active {
+      display: block;
     }
 
     .settings-group {
@@ -706,6 +745,30 @@
       .status-bar {
         gap: 12px;
         padding: 8px 10px;
+      }
+
+      .sub-tabs {
+        gap: 4px;
+      }
+
+      .sub-tab {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+      }
+
+      .setting-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .setting-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .setting-input {
+        flex: 1;
       }
 
       .timestamp {
@@ -1090,34 +1153,49 @@
       <div id="settings-status" class="settings-status"></div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Output Settings</div>
-      <div id="output-settings" class="settings-group"></div>
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="showSettingsTab('output')">Output</button>
+      <button class="sub-tab" onclick="showSettingsTab('battery')">Battery</button>
+      <button class="sub-tab" onclick="showSettingsTab('charging')">Charging</button>
+      <button class="sub-tab" onclick="showSettingsTab('solar')">Solar</button>
+      <button class="sub-tab" onclick="showSettingsTab('timing')">Timing</button>
+      <button class="sub-tab" onclick="showSettingsTab('grid')">Grid</button>
     </div>
 
-    <div class="card">
-      <div class="card-title">Battery Settings</div>
-      <div id="battery-settings" class="settings-group"></div>
+    <div id="output-settings-tab" class="settings-tab-content active">
+      <div class="card">
+        <div id="output-settings" class="settings-group"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Charging Settings</div>
-      <div id="charging-settings" class="settings-group"></div>
+    <div id="battery-settings-tab" class="settings-tab-content">
+      <div class="card">
+        <div id="battery-settings" class="settings-group"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Solar Settings</div>
-      <div id="solar-settings" class="settings-group"></div>
+    <div id="charging-settings-tab" class="settings-tab-content">
+      <div class="card">
+        <div id="charging-settings" class="settings-group"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Timed Charge/Discharge</div>
-      <div id="timing-settings" class="settings-group"></div>
+    <div id="solar-settings-tab" class="settings-tab-content">
+      <div class="card">
+        <div id="solar-settings" class="settings-group"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Grid Connection</div>
-      <div id="grid-settings" class="settings-group"></div>
+    <div id="timing-settings-tab" class="settings-tab-content">
+      <div class="card">
+        <div id="timing-settings" class="settings-group"></div>
+      </div>
+    </div>
+
+    <div id="grid-settings-tab" class="settings-tab-content">
+      <div class="card">
+        <div id="grid-settings" class="settings-group"></div>
+      </div>
     </div>
   </div>
 
@@ -1136,6 +1214,25 @@
       
       document.getElementById(tabName).classList.add('active');
       localStorage.setItem('activeTab', tabName);
+    }
+
+    function showSettingsTab(category) {
+      const subTabs = document.querySelectorAll('.sub-tab');
+      const subContents = document.querySelectorAll('.settings-tab-content');
+      
+      subTabs.forEach(tab => tab.classList.remove('active'));
+      subContents.forEach(content => content.classList.remove('active'));
+      
+      const activeTab = Array.from(subTabs).find(tab => 
+        tab.getAttribute('onclick').includes(`'${category}'`)
+      );
+      if (activeTab) activeTab.classList.add('active');
+      
+      const contentId = `${category}-settings-tab`;
+      const content = document.getElementById(contentId);
+      if (content) content.classList.add('active');
+      
+      localStorage.setItem('activeSettingsTab', category);
     }
 
     function toggleTheme() {
@@ -1165,6 +1262,9 @@
     window.addEventListener('load', () => {
       const savedTab = localStorage.getItem('activeTab') || 'summary';
       showTab(savedTab);
+      
+      const savedSettingsTab = localStorage.getItem('activeSettingsTab') || 'output';
+      showSettingsTab(savedSettingsTab);
       
       const savedTheme = localStorage.getItem('theme');
       const icon = document.getElementById('theme-icon');
