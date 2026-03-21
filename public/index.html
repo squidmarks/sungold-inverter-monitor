@@ -1091,8 +1091,18 @@
     </div>
 
     <div class="card">
+      <div class="card-title">Output Settings</div>
+      <div id="output-settings" class="settings-group"></div>
+    </div>
+
+    <div class="card">
       <div class="card-title">Battery Settings</div>
       <div id="battery-settings" class="settings-group"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Charging Settings</div>
+      <div id="charging-settings" class="settings-group"></div>
     </div>
 
     <div class="card">
@@ -1560,29 +1570,52 @@
 
     // Configuration registers definition
     const CONFIG_REGISTERS = {
+      OUTPUT: [
+        { address: 0xE204, name: 'Output Priority', key: 'outputPriority', scale: 1, unit: '', min: 0, max: 2, description: '0:Solar 1:Grid 2:SBU (Solar-Battery-Utility)' },
+        { address: 0xE208, name: 'Output Voltage', key: 'outputVolt', scale: 0.1, unit: 'V', min: 100, max: 264, description: 'AC output voltage setting' },
+        { address: 0xE209, name: 'Output Frequency', key: 'outputFreq', scale: 0.01, unit: 'Hz', min: 45, max: 65, description: 'AC output frequency (50Hz or 60Hz)' },
+        { address: 0xE20B, name: 'AC Voltage Range', key: 'acVoltRange', scale: 1, unit: '', min: 0, max: 1, description: '0:Wide band (APL) 1:Narrow band (UPS)' },
+        { address: 0xE20C, name: 'Power Saving Mode', key: 'powerSaving', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+        { address: 0xE20D, name: 'Auto Restart on Overload', key: 'autoRestartOL', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+        { address: 0xE20E, name: 'Auto Restart on Over-temp', key: 'autoRestartOT', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+        { address: 0xE210, name: 'Audible Alarm', key: 'alarmEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+        { address: 0xE212, name: 'Bypass on Overload', key: 'bypOnOL', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+      ],
       BATTERY: [
-        { address: 0xE003, name: 'Battery Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System battery voltage (12V/24V/36V/48V)' },
+        { address: 0xE002, name: 'Battery Capacity', key: 'batCap', scale: 1, unit: 'Ah', min: 0, max: 400, description: 'Battery rated capacity' },
+        { address: 0xE003, name: 'Battery Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: '12/24/36/48V system voltage' },
         { address: 0xE004, name: 'Battery Type', key: 'batType', scale: 1, unit: '', min: 0, max: 14, description: '0:User 1:SLD 2:FLD 3:GEL 4-6:LiFePO4' },
-        { address: 0xE006, name: 'Charge Limit Voltage', key: 'chgLimitVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Over-charge protection voltage (12V basis)' },
+        { address: 0xE005, name: 'Over Voltage Protection', key: 'batOverVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Over-voltage protection (12V basis)' },
+        { address: 0xE006, name: 'Charge Limit Voltage', key: 'chgLimitVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Charge cutoff voltage (12V basis)' },
         { address: 0xE007, name: 'Equalize Charge Voltage', key: 'equalizVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Equalization voltage (12V basis)' },
         { address: 0xE009, name: 'Float Charge Voltage', key: 'floatVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Float charge voltage (12V basis)' },
-        { address: 0xE00D, name: 'Over-discharge Voltage', key: 'overDischgVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Battery cutoff voltage with load (12V basis)' },
+        { address: 0xE00C, name: 'Under Voltage Alarm', key: 'underVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Low voltage alarm (12V basis)' },
+        { address: 0xE00D, name: 'Over-discharge Voltage', key: 'overDischgVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Load cutoff voltage (12V basis)' },
         { address: 0xE00F, name: 'Discharge Cutoff SoC', key: 'stopSoc', scale: 1, unit: '%', min: 0, max: 100, description: 'Minimum SoC before load cutoff' },
         { address: 0xE021, name: 'Max Discharge Current', key: 'maxDischgCurr', scale: 1, unit: 'A', min: 0, max: 200, description: 'Maximum battery discharge current' },
+      ],
+      CHARGING: [
+        { address: 0xE001, name: 'PV Charge Current', key: 'pvChgCurr', scale: 0.1, unit: 'A', min: 0, max: 150, description: 'PV charging current limit' },
+        { address: 0xE20A, name: 'Max Total Charge Current', key: 'maxChgCurr', scale: 0.1, unit: 'A', min: 0, max: 200, description: 'Total maximum charging current' },
+        { address: 0xE205, name: 'AC Charge Current Limit', key: 'acChgLimit', scale: 0.1, unit: 'A', min: 0, max: 200, description: 'Max current from AC/grid charging' },
+        { address: 0xE20F, name: 'Charge Source Priority', key: 'chgSourcePriority', scale: 1, unit: '', min: 0, max: 3, description: '0:PV first 1:AC first 2:Hybrid 3:PV only' },
+        { address: 0xE011, name: 'Equalize Charge Time', key: 'equalizTime', scale: 1, unit: 'min', min: 0, max: 900, description: 'Equalization charge duration' },
+        { address: 0xE012, name: 'Boost Charge Time', key: 'boostTime', scale: 1, unit: 'min', min: 10, max: 900, description: 'Boost charge duration' },
+        { address: 0xE206, name: 'Battery Equalize Enable', key: 'equalizEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
       ],
       SOLAR: [
         { address: 0xE039, name: 'PV Power Priority', key: 'pvPriority', scale: 1, unit: '', min: 0, max: 2, description: '0:Charge priority 1:Load priority' },
       ],
       TIMING: [
-        { address: 0xE026, name: 'Charge Start Time 1', key: 'chgStart1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
-        { address: 0xE027, name: 'Charge End Time 1', key: 'chgEnd1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
         { address: 0xE02C, name: 'Timed Charge Enable', key: 'timedChgEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
-        { address: 0xE02D, name: 'Discharge Start Time 1', key: 'dischgStart1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
-        { address: 0xE02E, name: 'Discharge End Time 1', key: 'dischgEnd1', scale: 1, unit: 'HH:MM', min: 0, max: 5947, description: 'Format: HH*256+MM' },
+        { address: 0xE026, name: 'Charge Start Time 1', key: 'chgStart1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM (e.g., 8:00 = 2048)' },
+        { address: 0xE027, name: 'Charge End Time 1', key: 'chgEnd1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM' },
         { address: 0xE033, name: 'Timed Discharge Enable', key: 'timedDischgEn', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
+        { address: 0xE02D, name: 'Discharge Start Time 1', key: 'dischgStart1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM' },
+        { address: 0xE02E, name: 'Discharge End Time 1', key: 'dischgEnd1', scale: 1, unit: '', min: 0, max: 5947, description: 'HH*256+MM' },
       ],
       GRID: [
-        { address: 0xE037, name: 'Grid Mode', key: 'gridMode', scale: 1, unit: '', min: 0, max: 3, description: '0:Off-grid 1:Grid-tied 2:ACout anti-backfeed 3:ACin anti-backfeed' },
+        { address: 0xE037, name: 'Grid Mode', key: 'gridMode', scale: 1, unit: '', min: 0, max: 3, description: '0:Off-grid 1:Grid-tied 2:ACout anti-backfeed' },
         { address: 0xE038, name: 'Leakage Detection', key: 'leakageDetect', scale: 1, unit: '', min: 0, max: 1, description: '0:Disabled 1:Enabled' },
       ]
     };
