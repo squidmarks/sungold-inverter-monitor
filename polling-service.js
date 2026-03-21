@@ -2,7 +2,7 @@ import { REGISTER_GROUPS } from './registers.js';
 import { InverterDataParser } from './data-parser.js';
 
 export class PollingService {
-  constructor(modbusClient, pollInterval, webServer = null, mqttPublisher = null) {
+  constructor(modbusClient, pollInterval, webServer = null, mqttPublisher = null, config = {}) {
     this.modbusClient = modbusClient;
     this.pollInterval = pollInterval;
     this.webServer = webServer;
@@ -11,6 +11,14 @@ export class PollingService {
     this.isRunning = false;
     this.isPolling = false;
     this.pollTimer = null;
+    
+    // Battery projection config
+    this.batteryCapacityAh = config.BATTERY_CAPACITY_AH || 200;
+    this.minBatterySoc = config.MIN_BATTERY_SOC || 20;
+    
+    // Historical data for discharge current moving average (5 minutes = 100 samples at 3s interval)
+    this.dischargeCurrentHistory = [];
+    this.maxDischargeHistory = 100;
   }
 
   async start() {
@@ -60,6 +68,44 @@ export class PollingService {
     }
   }
 
+  calculateBatteryProjections(soc, current) {
+    const projections = {
+      timeToFull: null,
+      timeRemaining: null
+    };
+    
+    // Only calculate if we have valid data
+    if (soc === null || soc === undefined || current === null || current === undefined) {
+      return projections;
+    }
+    
+    // Charging projection - time to 100%
+    if (current > 1 && soc < 98) {
+      const socRemaining = 100 - soc;
+      const hoursToFull = (socRemaining / 100) * this.batteryCapacityAh / current;
+      projections.timeToFull = hoursToFull; // in hours
+    }
+    
+    // Discharging projection - time remaining to MIN_BATTERY_SOC
+    if (current < -1 && soc > this.minBatterySoc) {
+      // Track discharge current for moving average
+      this.dischargeCurrentHistory.push(Math.abs(current));
+      if (this.dischargeCurrentHistory.length > this.maxDischargeHistory) {
+        this.dischargeCurrentHistory.shift();
+      }
+      
+      // Calculate 5-minute moving average
+      const avgDischargeCurrent = this.dischargeCurrentHistory.reduce((sum, val) => sum + val, 0) 
+        / this.dischargeCurrentHistory.length;
+      
+      const socRemaining = soc - this.minBatterySoc;
+      const hoursRemaining = (socRemaining / 100) * this.batteryCapacityAh / avgDischargeCurrent;
+      projections.timeRemaining = hoursRemaining; // in hours
+    }
+    
+    return projections;
+  }
+
   async poll() {
     if (this.isPolling) {
       console.warn('⚠ Poll already in progress, skipping');
@@ -91,12 +137,18 @@ export class PollingService {
       const ac = this.parser.parseACData(acData);
       const energy = this.parser.parseEnergyData(energyData);
 
+      // Calculate battery projections
+      const projections = this.calculateBatteryProjections(battery.soc, battery.current);
+
       const payload = {
         timestamp: new Date().toISOString(),
         inverterConnected: true,
         mqttConnected: this.mqttPublisher ? this.mqttPublisher.connected : false,
         systemStatus,
-        battery,
+        battery: {
+          ...battery,
+          projections
+        },
         ac,
         energy
       };

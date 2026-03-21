@@ -5,8 +5,9 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class WebServer {
-  constructor(port = 3000) {
+  constructor(port = 3000, config = {}) {
     this.port = port;
+    this.config = config;
     this.app = express();
     this.clients = new Set();
     this.latestData = null;
@@ -23,6 +24,13 @@ export class WebServer {
 
     this.app.get('/api/data', (req, res) => {
       res.json(this.latestData || {});
+    });
+
+    this.app.get('/api/config', (req, res) => {
+      res.json({
+        batteryCapacityAh: this.config.BATTERY_CAPACITY_AH || 200,
+        minBatterySoc: this.config.MIN_BATTERY_SOC || 20
+      });
     });
 
     this.app.get('/events', (req, res) => {

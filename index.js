@@ -20,7 +20,7 @@ async function main() {
   console.log(`  MQTT:        ${config.MQTT_HOST}:${config.MQTT_PORT}`);
   console.log('\nInitializing...\n');
 
-  const webServer = new WebServer(config.WEB_PORT);
+  const webServer = new WebServer(config.WEB_PORT, config);
   await webServer.start();
 
   const mqttPublisher = new MqttPublisher(config.MQTT_HOST, config.MQTT_PORT, {
@@ -53,7 +53,7 @@ async function main() {
     process.exit(1);
   }
 
-  const pollingService = new PollingService(modbusClient, config.POLL_INTERVAL_MS, webServer, mqttPublisher);
+  const pollingService = new PollingService(modbusClient, config.POLL_INTERVAL_MS, webServer, mqttPublisher, config);
 
   process.on('SIGINT', async () => {
     console.log('\n\nShutting down...');

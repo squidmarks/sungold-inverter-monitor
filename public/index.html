@@ -683,6 +683,10 @@
         <span class="metric-label">Battery SoC</span>
         <span class="metric-value" id="summary-soc">--<span class="unit">%</span></span>
       </div>
+      <div class="metric-row" id="battery-projection-row" style="display: none;">
+        <span class="metric-label" id="battery-projection-label">--</span>
+        <span class="metric-value" id="battery-projection-value" style="font-size: 1.1rem;">--</span>
+      </div>
       <div class="metric-row">
         <span class="metric-label">Solar Power</span>
         <span class="metric-value" id="summary-pv">--<span class="unit">W</span></span>
@@ -1222,6 +1226,31 @@
         const current = Math.abs(b.current || 0);
         const direction = b.current > 0 ? '(Discharging) ' : b.current < 0 ? '(Charging) ' : '';
         document.getElementById('bat-current').innerHTML = `<span class="unit">${direction}</span>${current.toFixed(1)}<span class="unit">A</span>`;
+        
+        // Update battery projections
+        const projectionRow = document.getElementById('battery-projection-row');
+        const projectionLabel = document.getElementById('battery-projection-label');
+        const projectionValue = document.getElementById('battery-projection-value');
+        
+        if (b.projections) {
+          if (b.projections.timeToFull !== null) {
+            const hours = Math.floor(b.projections.timeToFull);
+            const minutes = Math.round((b.projections.timeToFull - hours) * 60);
+            projectionLabel.textContent = 'Time to Full';
+            projectionValue.textContent = `${hours}h ${minutes}m`;
+            projectionRow.style.display = 'flex';
+          } else if (b.projections.timeRemaining !== null) {
+            const hours = Math.floor(b.projections.timeRemaining);
+            const minutes = Math.round((b.projections.timeRemaining - hours) * 60);
+            projectionLabel.textContent = 'Time Remaining';
+            projectionValue.textContent = `${hours}h ${minutes}m`;
+            projectionRow.style.display = 'flex';
+          } else {
+            projectionRow.style.display = 'none';
+          }
+        } else {
+          projectionRow.style.display = 'none';
+        }
         
         updateElement('bat-temp', b.temperature, 1, '°C');
         updateElement('bat-charge-power', b.chargePower, 0, 'W');

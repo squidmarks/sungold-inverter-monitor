@@ -165,6 +165,12 @@ export class MqttPublisher {
         this.publish('electrical.batteries.0.bms.soc', b.bms.soc !== null ? b.bms.soc / 100 : null);
         this.publish('electrical.batteries.0.bms.temperature', this.toKelvin(b.bms.temperature));
       }
+      
+      // Publish battery projections
+      if (b.projections) {
+        this.publish('electrical.batteries.0.capacity.timeToFull', b.projections.timeToFull !== null ? b.projections.timeToFull * 3600 : null);
+        this.publish('electrical.batteries.0.capacity.timeRemaining', b.projections.timeRemaining !== null ? b.projections.timeRemaining * 3600 : null);
+      }
     }
 
     if (data.ac) {
