@@ -1836,9 +1836,10 @@
     function createSettingRow(setting, category) {
       const row = document.createElement('div');
       row.className = 'setting-row';
+      const hexAddr = '0x' + setting.address.toString(16).toUpperCase();
       row.innerHTML = `
         <div class="setting-info">
-          <div class="setting-name">${setting.name}</div>
+          <div class="setting-name">${setting.name} <span style="color: var(--text-muted); font-weight: normal;">(${hexAddr})</span></div>
           <div class="setting-description">${setting.description}</div>
         </div>
         <div class="setting-controls">
