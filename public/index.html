@@ -1961,7 +1961,6 @@
 
     async function writeSetting(key, address, scale, category) {
       const inputEl = document.getElementById(`input-${key}`);
-      const valueEl = document.getElementById(`setting-${key}`);
       const statusDiv = document.getElementById(`${category.toLowerCase()}-status`);
       
       let registerValue;
@@ -1996,7 +1995,6 @@
         const result = await response.json();
         
         if (result.success) {
-          valueEl.textContent = inputValue.toFixed(scale < 1 ? 1 : 0) + valueEl.textContent.match(/[A-Z%°]/g)?.join('') || '';
           statusDiv.textContent = 'Setting updated successfully';
           statusDiv.style.color = 'var(--green)';
           setTimeout(() => { statusDiv.textContent = ''; }, 5000);
