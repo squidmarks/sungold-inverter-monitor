@@ -302,8 +302,8 @@ export const CONFIG_REGISTERS = {
   ],
   
   BATTERY: [
-    { id: '—', address: 0xE002, name: 'Battery Capacity', key: 'batCap', scale: 1, unit: 'Ah', min: 0, max: 400, description: 'From BMS' },
-    { id: '—', address: 0xE003, name: 'System Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System voltage',
+    { id: '—', address: 0xE002, name: 'Battery Capacity', key: 'batCap', scale: 1, unit: 'Ah', min: 0, max: 400, description: 'From BMS', readOnly: true },
+    { id: '—', address: 0xE003, name: 'System Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System voltage', readOnly: true,
       options: [
         { value: 12, label: '12V' },
         { value: 24, label: '24V' },

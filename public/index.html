@@ -708,6 +708,12 @@
       transform: translateY(-1px);
     }
 
+    .setting-readonly {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
     .btn-primary:active, .btn-set:active {
       transform: translateY(0);
     }
@@ -1672,8 +1678,8 @@
         },
       ],
       BATTERY: [
-        { id: '—', address: 0xE002, name: 'Battery Capacity', key: 'batCap', scale: 1, unit: 'Ah', min: 0, max: 400, description: 'From BMS' },
-        { id: '—', address: 0xE003, name: 'System Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System voltage',
+        { id: '—', address: 0xE002, name: 'Battery Capacity', key: 'batCap', scale: 1, unit: 'Ah', min: 0, max: 400, description: 'From BMS', readOnly: true },
+        { id: '—', address: 0xE003, name: 'System Voltage', key: 'batVoltage', scale: 1, unit: 'V', min: 12, max: 96, description: 'System voltage', readOnly: true,
           options: [
             { value: 12, label: '12V' },
             { value: 24, label: '24V' },
@@ -1856,9 +1862,11 @@
       
       // Build input control - either dropdown or number input
       let inputControl = '';
+      const disabledAttr = setting.readOnly ? ' disabled' : '';
+      
       if (setting.options && setting.options.length > 0) {
         // Render dropdown for discrete options
-        inputControl = `<select class="setting-input" id="input-${setting.key}">`;
+        inputControl = `<select class="setting-input" id="input-${setting.key}"${disabledAttr}>`;
         setting.options.forEach(opt => {
           inputControl += `<option value="${opt.value}">${opt.label}</option>`;
         });
@@ -1866,8 +1874,13 @@
       } else {
         // Render numeric input for continuous values
         inputControl = `<input type="number" class="setting-input" id="input-${setting.key}" 
-                 min="${setting.min}" max="${setting.max}" step="${setting.scale}">`;
+                 min="${setting.min}" max="${setting.max}" step="${setting.scale}"${disabledAttr}>`;
       }
+      
+      // Show Set button only for writable settings
+      const setButton = setting.readOnly 
+        ? '<span class="setting-readonly">(Read-Only)</span>' 
+        : `<button class="btn-set" onclick="writeSetting('${setting.key}', ${setting.address}, ${setting.scale}, '${category}')">Set</button>`;
       
       row.innerHTML = `
         <div class="setting-info">
@@ -1876,7 +1889,7 @@
         </div>
         <div class="setting-controls">
           ${inputControl}
-          <button class="btn-set" onclick="writeSetting('${setting.key}', ${setting.address}, ${setting.scale}, '${category}')">Set</button>
+          ${setButton}
         </div>
       `;
       return row;
