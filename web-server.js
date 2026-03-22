@@ -107,9 +107,6 @@ export class WebServer {
           }
         }
       } catch (error) {
-        if (this.modbusLock) {
-          this.modbusLock.release();
-        }
         res.status(500).json({ error: error.message });
       }
     });
@@ -136,9 +133,6 @@ export class WebServer {
           }
         }
       } catch (error) {
-        if (this.modbusLock) {
-          this.modbusLock.release();
-        }
         res.status(500).json({ error: error.message });
       }
     });
@@ -157,13 +151,15 @@ export class WebServer {
           return res.status(503).json({ error: 'Modbus client not connected' });
         }
         
-        // Acquire lock to prevent interference with polling
+        // Acquire lock with longer timeout for write operations
         if (this.modbusLock) {
-          await this.modbusLock.acquire(5000);
+          await this.modbusLock.acquire(15000);
         }
         
         try {
           const result = await this.modbusClient.writeSingleRegister(address, value);
+          // Give inverter time to process the write before releasing lock
+          await new Promise(resolve => setTimeout(resolve, 200));
           res.json({ success: true, ...result });
         } finally {
           if (this.modbusLock) {
@@ -171,9 +167,6 @@ export class WebServer {
           }
         }
       } catch (error) {
-        if (this.modbusLock) {
-          this.modbusLock.release();
-        }
         res.status(500).json({ error: error.message });
       }
     });
