@@ -1973,16 +1973,22 @@
             // Set input/dropdown to current value
             if (setting.options) {
               // For dropdown, set to raw register value
-              console.log(`Setting ${setting.name}: raw=${result.value}, options=${JSON.stringify(setting.options.map(o => o.value))}`);
-              inputElem.value = result.value;
+              console.log(`Setting ${setting.name}: raw=${result.value}, options=${JSON.stringify(setting.options.map(o => o.value))}, elem=${inputElem}, elemValue=${inputElem?.value}`);
+              if (inputElem) {
+                inputElem.value = String(result.value);
+                console.log(`After set: elemValue=${inputElem.value}, selected=${inputElem.selectedIndex}`);
+              }
             } else {
               // For numeric input, set to scaled value
               inputElem.value = result.scaled;
             }
             successCount++;
           } else if (result && result.unavailable) {
-            inputElem.disabled = true;
-            inputElem.parentElement.querySelector('.btn-set').disabled = true;
+            if (inputElem) {
+              inputElem.disabled = true;
+              const setBtn = inputElem.parentElement.querySelector('.btn-set');
+              if (setBtn) setBtn.disabled = true;
+            }
           }
         }
         
