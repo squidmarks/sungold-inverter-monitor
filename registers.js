@@ -299,6 +299,7 @@ export const CONFIG_REGISTERS = {
         { value: 1, label: 'Enabled' }
       ]
     },
+    { id: '—', address: 0x020C, name: 'Inverter Clock', key: 'systemClock', scale: 1, unit: '', type: 'clock', description: 'RTC date/time', readOnly: false, special: true },
   ],
   
   BATTERY: [
