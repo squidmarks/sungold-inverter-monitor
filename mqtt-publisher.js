@@ -22,7 +22,7 @@ export class MqttPublisher {
       console.log(`Connecting to MQTT broker at ${url}...`);
       
       this.client = mqtt.connect(url, {
-        clientId: `inverter-monitor-${Math.random().toString(16).substr(2, 8)}`,
+        clientId: 'sungold-inverter',
         clean: true,
         reconnectPeriod: 5000,
         connectTimeout: 10000,
