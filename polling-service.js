@@ -198,8 +198,7 @@ export class PollingService {
           if (reconnected) {
             console.log('✓ Reconnected to inverter');
           } else {
-            console.error('Failed to reconnect, stopping polling');
-            this.stop();
+            console.error('Failed to reconnect, will retry on next poll cycle');
           }
         } catch (reconnectError) {
           console.error('Reconnection error:', reconnectError.message);
