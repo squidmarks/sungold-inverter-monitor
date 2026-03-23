@@ -1973,6 +1973,7 @@
             // Set input/dropdown to current value
             if (setting.options) {
               // For dropdown, set to raw register value
+              console.log(`Setting ${setting.name}: raw=${result.value}, options=${JSON.stringify(setting.options.map(o => o.value))}`);
               inputElem.value = result.value;
             } else {
               // For numeric input, set to scaled value
