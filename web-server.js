@@ -193,17 +193,22 @@ export class WebServer {
           // Read 3 registers starting at 0x020C
           const values = await this.modbusClient.readRegisters(0x020C, 3);
           
+          console.log('RTC raw registers:', values.map(v => '0x' + v.toString(16).padStart(4, '0')).join(', '));
+          
           // Decode: 0x020C = year/month, 0x020D = day/hour, 0x020E = minute/second
-          const year = 2000 + (values[0] >> 8);  // High byte
-          const month = values[0] & 0xFF;        // Low byte
+          const yearByte = values[0] >> 8;    // High byte
+          const month = values[0] & 0xFF;     // Low byte
           const day = values[1] >> 8;
           const hour = values[1] & 0xFF;
           const minute = values[2] >> 8;
           const second = values[2] & 0xFF;
           
+          // Year appears to be stored as 2-digit year (26 for 2026, not offset from 2000)
+          const year = yearByte < 50 ? 2000 + yearByte : 1900 + yearByte;
+          
           const dateTime = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
           
-          res.json({ dateTime, year, month, day, hour, minute, second });
+          res.json({ dateTime, year, month, day, hour, minute, second, rawRegisters: values });
         } finally {
           if (this.modbusLock) {
             this.modbusLock.release();
