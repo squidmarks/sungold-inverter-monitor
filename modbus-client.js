@@ -180,6 +180,88 @@ export class InverterModbusClient {
     });
   }
 
+  async writeMultipleRegisters(startAddress, values) {
+    if (!this.connected || !this.socket) {
+      throw new Error('Not connected to inverter');
+    }
+
+    const count = values.length;
+    if (count === 0 || count > 32) {
+      throw new Error(`Invalid register count: ${count} (must be 1-32)`);
+    }
+
+    return new Promise((resolve, reject) => {
+      const transId = this.transactionId++;
+      const byteCount = count * 2;
+      
+      // Modbus TCP frame for function code 10 (Write Multiple Registers)
+      const request = Buffer.alloc(13 + byteCount);
+      request.writeUInt16BE(transId, 0);           // Transaction ID
+      request.writeUInt16BE(0, 2);                 // Protocol ID
+      request.writeUInt16BE(7 + byteCount, 4);     // Length
+      request.writeUInt8(this.slaveId, 6);         // Slave ID
+      request.writeUInt8(0x10, 7);                 // Function code 10 (16 decimal)
+      request.writeUInt16BE(startAddress, 8);      // Starting address
+      request.writeUInt16BE(count, 10);            // Register count
+      request.writeUInt8(byteCount, 12);           // Byte count
+      
+      // Write register values
+      for (let i = 0; i < count; i++) {
+        request.writeUInt16BE(values[i], 13 + i * 2);
+      }
+
+      let responseBuffer = Buffer.alloc(0);
+      
+      const timeout = setTimeout(() => {
+        this.socket.removeListener('data', dataHandler);
+        console.error(`Modbus write multiple timed out at address 0x${startAddress.toString(16)}`);
+        reject(new Error('Timed out waiting for write multiple response'));
+      }, 10000);
+
+      const dataHandler = (data) => {
+        responseBuffer = Buffer.concat([responseBuffer, data]);
+        
+        // Response should be 12 bytes for function code 10
+        if (responseBuffer.length >= 12) {
+          clearTimeout(timeout);
+          this.socket.removeListener('data', dataHandler);
+          
+          try {
+            const responseSlaveId = responseBuffer[6];
+            const responseFunctionCode = responseBuffer[7];
+            
+            // Check for exception response (function code + 0x80)
+            if (responseFunctionCode === 0x90) {
+              const exceptionCode = responseBuffer[8];
+              reject(new Error(`Modbus exception ${exceptionCode} writing multiple to address 0x${startAddress.toString(16)}`));
+              return;
+            }
+            
+            if (responseSlaveId !== this.slaveId || responseFunctionCode !== 0x10) {
+              reject(new Error(`Invalid response: expected slave ${this.slaveId} fc 10, got slave ${responseSlaveId} fc ${responseFunctionCode}`));
+              return;
+            }
+            
+            const responseAddress = responseBuffer.readUInt16BE(8);
+            const responseCount = responseBuffer.readUInt16BE(10);
+            
+            if (responseAddress !== startAddress || responseCount !== count) {
+              reject(new Error(`Write verification failed: expected addr=${startAddress} count=${count}, got addr=${responseAddress} count=${responseCount}`));
+              return;
+            }
+            
+            resolve({ startAddress, count, values });
+          } catch (error) {
+            reject(error);
+          }
+        }
+      };
+
+      this.socket.on('data', dataHandler);
+      this.socket.write(request);
+    });
+  }
+
   async writeSingleRegister(address, value) {
     if (!this.connected || !this.socket) {
       throw new Error('Not connected to inverter');

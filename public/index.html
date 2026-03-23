@@ -611,10 +611,19 @@
 
     .settings-tab-content {
       display: none;
+      flex-direction: column;
+      height: calc(100vh - 200px);
+      min-height: 400px;
     }
 
     .settings-tab-content.active {
-      display: block;
+      display: flex;
+    }
+
+    .settings-tab-content .card {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 0;
     }
 
     .settings-group {
