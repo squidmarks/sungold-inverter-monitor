@@ -352,11 +352,11 @@ export const CONFIG_REGISTERS = {
         { value: 1, label: 'Enabled' }
       ]
     },
-    { id: '—', address: 0xE005, name: 'Over-Voltage Disconnect', key: 'batOverVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Charge cutoff (12V basis)' },
-    { id: '14', address: 0xE00C, name: 'Under-Voltage Alarm', key: 'underVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Low voltage warning (12V basis)' },
-    { id: '12', address: 0xE00D, name: 'Over-Discharge Voltage', key: 'overDischgVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Load cutoff delayed (12V basis)' },
-    { id: '15', address: 0xE00E, name: 'Discharge Limit Voltage', key: 'dischgLimit', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Immediate cutoff (12V basis)' },
-    { id: '35', address: 0xE00B, name: 'Under-Voltage Recovery', key: 'overDischgBack', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Resume load voltage (12V basis)' },
+    { id: '—', address: 0xE005, name: 'Over-Voltage Disconnect', key: 'batOverVolt', scale: 0.4, unit: 'V', min: 48, max: 62, description: 'Battery over-voltage protection' },
+    { id: '14', address: 0xE00C, name: 'Under-Voltage Alarm', key: 'underVolt', scale: 0.4, unit: 'V', min: 40, max: 52, description: 'Low voltage alarm threshold' },
+    { id: '12', address: 0xE00D, name: 'Over-Discharge Voltage', key: 'overDischgVolt', scale: 0.4, unit: 'V', min: 40, max: 48, description: 'Delayed load cutoff voltage' },
+    { id: '15', address: 0xE00E, name: 'Discharge Limit Voltage', key: 'dischgLimit', scale: 0.4, unit: 'V', min: 40, max: 52, description: 'Immediate load cutoff voltage' },
+    { id: '35', address: 0xE00B, name: 'Under-Voltage Recovery', key: 'overDischgBack', scale: 0.4, unit: 'V', min: 44, max: 54.4, description: 'Resume load after cutoff' },
     { id: '59', address: 0xE00F, name: 'Discharge Cutoff SoC', key: 'stopSoc', scale: 1, unit: '%', min: 0, max: 100, description: 'Min SoC (BMS only)' },
     { id: '58', address: 0xE01E, name: 'Low SoC Alarm', key: 'socLowAlarm', scale: 1, unit: '%', min: 0, max: 100, description: 'SoC alarm (BMS only)' },
     { id: '—', address: 0xE021, name: 'Max Discharge Current', key: 'maxDischgCurr', scale: 1, unit: 'A', min: 0, max: 200, description: 'Peak discharge current' },
@@ -380,10 +380,10 @@ export const CONFIG_REGISTERS = {
         { value: 2, label: 'LCINV (Use Inverter Logic)' }
       ]
     },
-    { id: '09', address: 0xE006, name: 'Boost Charge Voltage', key: 'chgCutoffVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Boost voltage (12V basis)' },
-    { id: '17', address: 0xE007, name: 'Equalize Voltage', key: 'equalizVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Equalization voltage (12V basis)' },
-    { id: '11', address: 0xE009, name: 'Float Voltage', key: 'floatVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Float charge voltage (12V basis)' },
-    { id: '37', address: 0xE00A, name: 'Recharge Voltage', key: 'boostBackVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Resume charge if below (12V basis)' },
+    { id: '09', address: 0xE006, name: 'Boost Charge Voltage', key: 'chgCutoffVolt', scale: 0.4, unit: 'V', min: 48, max: 58.4, description: 'Bulk charge voltage' },
+    { id: '17', address: 0xE007, name: 'Equalize Voltage', key: 'equalizVolt', scale: 0.4, unit: 'V', min: 48, max: 58, description: 'Equalization voltage (lead-acid only)' },
+    { id: '11', address: 0xE009, name: 'Float Voltage', key: 'floatVolt', scale: 0.4, unit: 'V', min: 48, max: 58.4, description: 'Float/maintain voltage' },
+    { id: '37', address: 0xE00A, name: 'Recharge Voltage', key: 'boostBackVolt', scale: 0.4, unit: 'V', min: 44, max: 54, description: 'Resume charge when below' },
     { id: '18', address: 0xE011, name: 'Equalize Duration', key: 'equalizTime', scale: 1, unit: 'min', min: 0, max: 900, description: 'Equalization time' },
     { id: '10', address: 0xE012, name: 'Boost Charge Duration', key: 'boostTime', scale: 1, unit: 'min', min: 10, max: 900, description: 'Boost charge time' },
     { id: '20', address: 0xE013, name: 'Equalize Interval', key: 'equalizInterval', scale: 1, unit: 'days', min: 0, max: 30, description: 'Days between equalizations' },
@@ -408,8 +408,8 @@ export const CONFIG_REGISTERS = {
   ],
   
   SBU_MODE: [
-    { id: '04', address: 0xE01B, name: 'Battery to Mains Voltage', key: 'batSwitchDcVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Switch to AC when below (12V basis)' },
-    { id: '05', address: 0xE022, name: 'Mains to Battery Voltage', key: 'batSwitchInvVolt', scale: 0.1, unit: 'V', min: 9, max: 15.5, description: 'Switch to inverter when above (12V basis)' },
+    { id: '04', address: 0xE01B, name: 'Battery to Mains Voltage', key: 'batSwitchDcVolt', scale: 0.4, unit: 'V', min: 40, max: 52, description: 'Switch to AC when battery below' },
+    { id: '05', address: 0xE022, name: 'Mains to Battery Voltage', key: 'batSwitchInvVolt', scale: 0.4, unit: 'V', min: 48, max: 60, description: 'Switch to inverter when battery above' },
     { id: '61', address: 0xE01F, name: 'Switch to Mains SoC', key: 'socSwToLine', scale: 1, unit: '%', min: 0, max: 100, description: 'Use AC when SoC below (BMS)' },
     { id: '62', address: 0xE020, name: 'Switch to Inverter SoC', key: 'socSwToBatt', scale: 1, unit: '%', min: 1, max: 100, description: 'Use inverter when SoC above (BMS)' },
   ],
